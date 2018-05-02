@@ -1,0 +1,305 @@
+﻿<Window x:Class="SeaBattle.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SeaBattle"
+        mc:Ignorable="d"
+        Title="Морской бой" Height="700" Width="1000">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <!-- крата игрока-->
+        <Grid x:Name="MapPlayer" HorizontalAlignment="Left" Height="400" Margin="40,25,0,0" VerticalAlignment="Top" Width="400
+              " UseLayoutRounding="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <!--кнопки поля -->
+            <Button x:Name="P0_0"  Grid.Column="0" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_1"  Grid.Column="0" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_2"  Grid.Column="0" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_3"  Grid.Column="0" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_4"  Grid.Column="0" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_5"  Grid.Column="0" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_6"  Grid.Column="0" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_7"  Grid.Column="0" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_8"  Grid.Column="0" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P0_9"  Grid.Column="0" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!--  -->
+            <Button x:Name="P1_0"  Grid.Column="1" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_1"  Grid.Column="1" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_2"  Grid.Column="1" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_3"  Grid.Column="1" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_4"  Grid.Column="1" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_5"  Grid.Column="1" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_6"  Grid.Column="1" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_7"  Grid.Column="1" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_8"  Grid.Column="1" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P1_9"  Grid.Column="1" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P2_0"  Grid.Column="2" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_1"  Grid.Column="2" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_2"  Grid.Column="2" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_3"  Grid.Column="2" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_4"  Grid.Column="2" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_5"  Grid.Column="2" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_6"  Grid.Column="2" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_7"  Grid.Column="2" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_8"  Grid.Column="2" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P2_9"  Grid.Column="2" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P3_0"  Grid.Column="3" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_1"  Grid.Column="3" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_2"  Grid.Column="3" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_3"  Grid.Column="3" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_4"  Grid.Column="3" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_5"  Grid.Column="3" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_6"  Grid.Column="3" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_7"  Grid.Column="3" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_8"  Grid.Column="3" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P3_9"  Grid.Column="3" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P4_0"  Grid.Column="4" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_1"  Grid.Column="4" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_2"  Grid.Column="4" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_3"  Grid.Column="4" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_4"  Grid.Column="4" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_5"  Grid.Column="4" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_6"  Grid.Column="4" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_7"  Grid.Column="4" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_8"  Grid.Column="4" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P4_9"  Grid.Column="4" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P5_0"  Grid.Column="5" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_1"  Grid.Column="5" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_2"  Grid.Column="5" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_3"  Grid.Column="5" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_4"  Grid.Column="5" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_5"  Grid.Column="5" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_6"  Grid.Column="5" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_7"  Grid.Column="5" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_8"  Grid.Column="5" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P5_9"  Grid.Column="5" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!---->
+            <Button x:Name="P6_0"  Grid.Column="6" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_1"  Grid.Column="6" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_2"  Grid.Column="6" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_3"  Grid.Column="6" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_4"  Grid.Column="6" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_5"  Grid.Column="6" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_6"  Grid.Column="6" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_7"  Grid.Column="6" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_8"  Grid.Column="6" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P6_9"  Grid.Column="6" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P7_0"  Grid.Column="7" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_1"  Grid.Column="7" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_2"  Grid.Column="7" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_3"  Grid.Column="7" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_4"  Grid.Column="7" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_5"  Grid.Column="7" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_6"  Grid.Column="7" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_7"  Grid.Column="7" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_8"  Grid.Column="7" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P7_9"  Grid.Column="7" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!---->
+            <Button x:Name="P8_0"  Grid.Column="8" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_1"  Grid.Column="8" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_2"  Grid.Column="8" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_3"  Grid.Column="8" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_4"  Grid.Column="8" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_5"  Grid.Column="8" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_6"  Grid.Column="8" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_7"  Grid.Column="8" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_8"  Grid.Column="8" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P8_9"  Grid.Column="8" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <!-- -->
+            <Button x:Name="P9_0"  Grid.Column="9" Grid.Row="0" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_1"  Grid.Column="9" Grid.Row="1" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_2"  Grid.Column="9" Grid.Row="2" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_3"  Grid.Column="9" Grid.Row="3" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_4"  Grid.Column="9" Grid.Row="4" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_5"  Grid.Column="9" Grid.Row="5" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_6"  Grid.Column="9" Grid.Row="6" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_7"  Grid.Column="9" Grid.Row="7" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_8"  Grid.Column="9" Grid.Row="8" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+            <Button x:Name="P9_9"  Grid.Column="9" Grid.Row="9" Background="LightSkyBlue" Click="POnceButton_Click"></Button>
+        </Grid>
+        <!-- крата противника -->
+        <Grid x:Name="MapOpponent" HorizontalAlignment="Left" Height="400" Margin="560,25,0,0" VerticalAlignment="Top" Width="400" UseLayoutRounding="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition />
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <!--кнопки поля -->
+            <Button x:Name="O0_0"  Grid.Column="0" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_1"  Grid.Column="0" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_2"  Grid.Column="0" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_3"  Grid.Column="0" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_4"  Grid.Column="0" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_5"  Grid.Column="0" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_6"  Grid.Column="0" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_7"  Grid.Column="0" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_8"  Grid.Column="0" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O0_9"  Grid.Column="0" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!--  -->
+            <Button x:Name="O1_0"  Grid.Column="1" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_1"  Grid.Column="1" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_2"  Grid.Column="1" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_3"  Grid.Column="1" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_4"  Grid.Column="1" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_5"  Grid.Column="1" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_6"  Grid.Column="1" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_7"  Grid.Column="1" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_8"  Grid.Column="1" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O1_9"  Grid.Column="1" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O2_0"  Grid.Column="2" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_1"  Grid.Column="2" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_2"  Grid.Column="2" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_3"  Grid.Column="2" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_4"  Grid.Column="2" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_5"  Grid.Column="2" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_6"  Grid.Column="2" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_7"  Grid.Column="2" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_8"  Grid.Column="2" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O2_9"  Grid.Column="2" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O3_0"  Grid.Column="3" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_1"  Grid.Column="3" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_2"  Grid.Column="3" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_3"  Grid.Column="3" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_4"  Grid.Column="3" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_5"  Grid.Column="3" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_6"  Grid.Column="3" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_7"  Grid.Column="3" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_8"  Grid.Column="3" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O3_9"  Grid.Column="3" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O4_0"  Grid.Column="4" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_1"  Grid.Column="4" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_2"  Grid.Column="4" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_3"  Grid.Column="4" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_4"  Grid.Column="4" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_5"  Grid.Column="4" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_6"  Grid.Column="4" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_7"  Grid.Column="4" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_8"  Grid.Column="4" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O4_9"  Grid.Column="4" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O5_0"  Grid.Column="5" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_1"  Grid.Column="5" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_2"  Grid.Column="5" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_3"  Grid.Column="5" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_4"  Grid.Column="5" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_5"  Grid.Column="5" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_6"  Grid.Column="5" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_7"  Grid.Column="5" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_8"  Grid.Column="5" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O5_9"  Grid.Column="5" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!---->
+            <Button x:Name="O6_0"  Grid.Column="6" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_1"  Grid.Column="6" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_2"  Grid.Column="6" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_3"  Grid.Column="6" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_4"  Grid.Column="6" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_5"  Grid.Column="6" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_6"  Grid.Column="6" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_7"  Grid.Column="6" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_8"  Grid.Column="6" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O6_9"  Grid.Column="6" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O7_0"  Grid.Column="7" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_1"  Grid.Column="7" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_2"  Grid.Column="7" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_3"  Grid.Column="7" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_4"  Grid.Column="7" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_5"  Grid.Column="7" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_6"  Grid.Column="7" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_7"  Grid.Column="7" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_8"  Grid.Column="7" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O7_9"  Grid.Column="7" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!---->
+            <Button x:Name="O8_0"  Grid.Column="8" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_1"  Grid.Column="8" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_2"  Grid.Column="8" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_3"  Grid.Column="8" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_4"  Grid.Column="8" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_5"  Grid.Column="8" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_6"  Grid.Column="8" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_7"  Grid.Column="8" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_8"  Grid.Column="8" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O8_9"  Grid.Column="8" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <!-- -->
+            <Button x:Name="O9_0"  Grid.Column="9" Grid.Row="0" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_1"  Grid.Column="9" Grid.Row="1" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_2"  Grid.Column="9" Grid.Row="2" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_3"  Grid.Column="9" Grid.Row="3" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_4"  Grid.Column="9" Grid.Row="4" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_5"  Grid.Column="9" Grid.Row="5" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_6"  Grid.Column="9" Grid.Row="6" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_7"  Grid.Column="9" Grid.Row="7" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_8"  Grid.Column="9" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
+            <Button x:Name="O9_9"  Grid.Column="9" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
+        </Grid>
+        <Button x:Name="StartGame" Content="Начать игру" HorizontalAlignment="Left" Margin="252,606,0,0" VerticalAlignment="Top" Width="188" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="StartGame_Click"/>
+        <Label Content="Статус игры:" HorizontalAlignment="Left" Margin="560,522,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.643,-0.145" Height="35" Width="121" FontSize="18" FontFamily="Nirmala UI"/>
+        <TextBox x:Name="StatusBox" HorizontalAlignment="Left" Height="31" Margin="681,526,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
+        <Label Content="Корабли:" HorizontalAlignment="Left" Margin="58,459,0,0" VerticalAlignment="Top" FontSize="18"/>
+        <StackPanel HorizontalAlignment="Left" Height="96" Margin="58,498,0,0" VerticalAlignment="Top" Width="189">
+            <RadioButton x:Name="Single" Content="Однопалубный" FontSize="18" GroupName="Ships" />
+            <RadioButton x:Name="Double" Content="Двухпалубный" FontSize="18" GroupName="Ships" />
+            <RadioButton x:Name="Three" Content="Трёхпалубный" FontSize="18" GroupName="Ships" />
+            <RadioButton x:Name="Four" Content="Четырёхпалубный" FontSize="18" GroupName="Ships" />
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Left" Height="46" Margin="252,498,0,0" VerticalAlignment="Top" Width="188">
+            <RadioButton x:Name="Horizontally" Content="Горизонтально" GroupName="Orientation" FontSize="16"/>
+            <RadioButton x:Name="Vertically" Content="Вертикально" FontSize="16" GroupName="Orientation"/>
+        </StackPanel>
+
+
+    </Grid>
+</Window>
