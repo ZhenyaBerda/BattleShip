@@ -19,7 +19,8 @@ namespace SeaBattle
 		private MarkType[,] mPlayersMap;
 
 		private int mSingle = 4, mDouble = 3, mThree = 2, mFour = 1;
-		//
+		//Количество кораблей
+		private int mOShips;
 		private MarkType[,] mOpponentsMap;
 		public bool mOpponent;
 		// Переменная, которая отслеживает ходы игрока
@@ -37,10 +38,10 @@ namespace SeaBattle
 			if (mOpponent == true)
 			{
 				InitializeComponent();
-				this.Title="Морской бой. "+logWin.mName;
+				this.Title = "Морской бой. " + logWin.mName;
 				NewGame();
 			}
-			
+
 		}
 
 		/// <summary>
@@ -48,8 +49,9 @@ namespace SeaBattle
 		/// </summary>
 		public void NewGame()
 		{
-			StatusBox.IsEnabled = false;
 
+			StatusBox.IsEnabled = false;
+			mOShips = 10;
 			StatusBox.Text = "Расставьте корабли";
 
 			//Саздаем массивы свободных ячеек игроков
@@ -78,8 +80,8 @@ namespace SeaBattle
 			{
 				//button.Background = Brushes.LightSkyBlue;
 				button.IsEnabled = false;
-			}); 
-			
+			});
+
 			//Игра не закончена 
 			mGameEnded = false;
 		}
@@ -137,7 +139,7 @@ namespace SeaBattle
 				var row = Grid.GetRow(button);
 
 				//Проверяем, что корабль не выходит за границы поля
-				if (CheckCell(row, column) ==  true && CheckCell(row, column - 1) == true)
+				if (CheckCell(row, column) == true && CheckCell(row, column - 1) == true)
 				{
 					//Проверяем, свободны ли ячейки
 					if (mPlayersMap[row, column] != MarkType.Free)
@@ -329,13 +331,13 @@ namespace SeaBattle
 						return;
 					}
 					else
-					if(mPlayersMap[row, column - 2] != MarkType.Free)
+					if (mPlayersMap[row, column - 2] != MarkType.Free)
 					{
 						MessageBox.Show("Выберите другую ячейку!");
 						return;
 					}
 					else
-					if(mPlayersMap[row, column - 3] != MarkType.Free)
+					if (mPlayersMap[row, column - 3] != MarkType.Free)
 					{
 						MessageBox.Show("Выберите другую ячейку!");
 						return;
@@ -381,7 +383,7 @@ namespace SeaBattle
 						return;
 					}
 					else
-					if(mPlayersMap[row - 2, column] != MarkType.Free)
+					if (mPlayersMap[row - 2, column] != MarkType.Free)
 					{
 						MessageBox.Show("Выберите другую ячейку!");
 						return;
@@ -418,7 +420,7 @@ namespace SeaBattle
 		/// <returns></returns>
 		private Button GetButton(int row, int column)
 		{
-			Button btn=null;
+			Button btn = null;
 
 			foreach (Button b in MapPlayer.Children)
 			{
@@ -496,7 +498,7 @@ namespace SeaBattle
 		//!!!!!!!!!!!!!!!!!!
 		//Временная функция
 		private void OpponShips()
-		{
+		{/*
 			mOpponentsMap[0, 0] = mOpponentsMap[0, 2] = mOpponentsMap[0, 4] = mOpponentsMap[0, 6] = mOpponentsMap[0, 8] = mOpponentsMap[0, 9]
 				= mOpponentsMap[2, 0] = mOpponentsMap[2, 1] = mOpponentsMap[2, 3] = mOpponentsMap[2, 4] = mOpponentsMap[2, 6] = mOpponentsMap[2, 7] = mOpponentsMap[2, 8]
 				= mOpponentsMap[4, 0] = mOpponentsMap[4, 1] = mOpponentsMap[4, 2] = mOpponentsMap[4, 4] = mOpponentsMap[4, 5] = mOpponentsMap[4, 6] = mOpponentsMap[4, 7] = MarkType.Ship;
@@ -507,7 +509,38 @@ namespace SeaBattle
 					if (mOpponentsMap[i, j] != MarkType.Ship)
 						mOpponentsMap[i, j] = MarkType.Indenting;
 				}
-			
+
+			mOpponentsMap[4, 9] = mOpponentsMap[5, 9] = MarkType.Free;*/
+
+			mOpponentsMap[1, 1] = mOpponentsMap[2, 1] = mOpponentsMap[3, 1] = mOpponentsMap[4, 1] = mOpponentsMap[6, 1] =
+				mOpponentsMap[7, 1] = mOpponentsMap[8, 1] = mOpponentsMap[1, 3] = mOpponentsMap[2, 3] = mOpponentsMap[1, 5] =
+				mOpponentsMap[1, 6] = mOpponentsMap[1, 7] = mOpponentsMap[5, 5] = mOpponentsMap[5, 6] = mOpponentsMap[7, 4] = 
+				mOpponentsMap[7, 5] = mOpponentsMap[5, 8] = mOpponentsMap[7, 6] = mOpponentsMap[7, 7] = MarkType.Ship;
+			/*
+			mOpponentsMap[0, 0]= mOpponentsMap[0, 1]= mOpponentsMap[0, 2]=
+				mOpponentsMap[1, 0]= mOpponentsMap[2, 0]= mOpponentsMap[3, 0]= mOpponentsMap[4, 0]= mOpponentsMap[5, 0]=
+				mOpponentsMap[5, 1]= mOpponentsMap[5, 2]= mOpponentsMap[4, 2]= mOpponentsMap[3, 2]= mOpponentsMap[2, 2]= mOpponentsMap[1, 2]=*/
+			for (int i = 0; i < 10; i++)
+			{
+				mOpponentsMap[i, 0] = mOpponentsMap[i, 2] = MarkType.Indenting;
+				if (i != 9)
+				{
+					mOpponentsMap[0, i] = MarkType.Indenting;
+					if (i != 7)
+						mOpponentsMap[i, 4] = MarkType.Indenting;
+				}
+				if (i >= 3 && i <= 9)
+				{
+					mOpponentsMap[6, i] = MarkType.Indenting;
+					if (i >= 4)
+						mOpponentsMap[4, i] = MarkType.Indenting;
+					if(i!=9)
+						mOpponentsMap[8, i] = MarkType.Indenting;
+				}
+			}
+			mOpponentsMap[5, 1] = mOpponentsMap[9, 1] = mOpponentsMap[7, 3] = mOpponentsMap[7, 8] = mOpponentsMap[3, 3] 
+				= mOpponentsMap[5, 9] = mOpponentsMap[5, 7] = mOpponentsMap[1, 8] = mOpponentsMap[2, 5] = mOpponentsMap[2, 6] = mOpponentsMap[2, 7]  = mOpponentsMap[2, 8] = MarkType.Indenting;
+
 		}
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -530,6 +563,7 @@ namespace SeaBattle
 
 			if (mPlayerTurn == true)
 			{
+				StatusBox.Text = "Ваш ход";
 				//Находим координаты точки атаки
 				var button = (Button)sender;
 				//Столбец = координата X
@@ -541,17 +575,76 @@ namespace SeaBattle
 				{
 					mOpponentsMap[row, column] = MarkType.Kill;
 					button.Background = Brushes.Red;
+					//Определяем, попадение в корабль или полное уничтожение
+					if (CheckKilled(row, column) == true)
+					{
+						//mOShips = mOShips - 1;
+						StatusBox.Text = "Корабль противника потоплен!";
+					}
+					else
+						//MessageBox.Show("Попал!");
+						StatusBox.Text = "Попадение!";
+				}
+
+				if (mOpponentsMap[row, column] == MarkType.Free)
+				{
+					mOpponentsMap[row, column] = MarkType.Miss;
+					button.Background = Brushes.Gray;
 				}
 			}
+
 		}
 
-		private void CheckKilled(int row, int column)
+		/// <summary>
+		/// Проверка кораблей
+		/// </summary>
+		/// <param name="row"></param>
+		/// <param name="column"></param>
+		/// <returns></returns>
+		 
+			//мне не нравиться эта функция, но она работает
+			//пусть будет
+		private bool CheckKilled(int row, int column)
 		{
+			//Если вертикальный корабль
+			
+			if (mOpponentsMap[row + 1, column] != MarkType.Indenting || mOpponentsMap[row - 1, column] != MarkType.Indenting)
+			{
+				//идем наверх
+				for (int i = row + 1; mOpponentsMap[i, column] != MarkType.Indenting; i++)
+				{
+					if (mOpponentsMap[i, column] == MarkType.Ship)
+						return false;
+				}
+				//идем вниз
+				for (int i = row - 1; mOpponentsMap[i, column] != MarkType.Indenting; i--)
+				{
+					if (mOpponentsMap[i, column] == MarkType.Ship)
+						return false;
+					
+				}
+			}
+			else
+			if (mOpponentsMap[row, column + 1] != MarkType.Indenting || mOpponentsMap[row, column - 1] != MarkType.Indenting)
+			{
+				//горизонтальный корабль
+				//идем впрево
+				for (int i = column + 1; mOpponentsMap[row, i] != MarkType.Indenting; i++)
+				{
+					if (mOpponentsMap[row, i] == MarkType.Ship)
+						return false;
+				}
+				//идем влево
+				for (int i = column - 1; mOpponentsMap[row, i] != MarkType.Indenting; i--)
+				{
+					if (mOpponentsMap[row, i] == MarkType.Ship)
+						return false;
+				}
+			}
+			else //Однопалубный
+				return true;
 
+			return true;
 		}
-		
 	}
-
-
-
 }
