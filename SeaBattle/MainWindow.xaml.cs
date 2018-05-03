@@ -20,7 +20,9 @@ namespace SeaBattle
 
 		private int mSingle = 4, mDouble = 3, mThree = 2, mFour = 1;
 		//Количество кораблей
+		private int mPShips;
 		private int mOShips;
+		//
 		private MarkType[,] mOpponentsMap;
 		public bool mOpponent;
 		// Переменная, которая отслеживает ходы игрока
@@ -52,6 +54,7 @@ namespace SeaBattle
 
 			StatusBox.IsEnabled = false;
 			mOShips = 10;
+			mPShips = 0;
 			StatusBox.Text = "Расставьте корабли";
 
 			//Саздаем массивы свободных ячеек игроков
@@ -78,7 +81,6 @@ namespace SeaBattle
 
 			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
 			{
-				//button.Background = Brushes.LightSkyBlue;
 				button.IsEnabled = false;
 			});
 
@@ -121,6 +123,7 @@ namespace SeaBattle
 
 				//Уменьшаем количество доступных кораблей
 				mSingle = mSingle - 1;
+				mPShips++;
 				if (mSingle == 0)
 				{
 					Single.IsChecked = false;
@@ -160,6 +163,7 @@ namespace SeaBattle
 
 					//Уменьшаем количество доступных кораблей
 					mDouble = mDouble - 1;
+					mPShips++;
 
 					if (mDouble == 0)
 					{
@@ -203,6 +207,7 @@ namespace SeaBattle
 
 					//Уменьшаем количество доступных кораблей
 					mDouble = mDouble - 1;
+					mPShips++;
 
 					if (mDouble == 0)
 					{
@@ -250,6 +255,7 @@ namespace SeaBattle
 					MarkShipHor(row, column, button, 3);
 					//Уменьшаем количество доступных кораблей
 					mThree = mThree - 1;
+					mPShips++;
 
 					if (mThree == 0)
 					{
@@ -295,6 +301,7 @@ namespace SeaBattle
 					MarkShipVer(row, column, button, 3);
 					//Уменьшаем количество доступных кораблей
 					mThree = mThree - 1;
+					mPShips++;
 
 					if (mThree == 0)
 					{
@@ -348,6 +355,7 @@ namespace SeaBattle
 					MarkShipHor(row, column, button, 4);
 					//Уменьшаем количество доступных кораблей
 					mFour = mFour - 1;
+					mPShips++;
 
 					if (mFour == 0)
 					{
@@ -400,6 +408,7 @@ namespace SeaBattle
 					MarkShipVer(row, column, button, 4);
 					//Уменьшаем количество доступных кораблей
 					mFour = mFour - 1;
+					mPShips++;
 
 					if (mFour == 0)
 					{
@@ -498,48 +507,14 @@ namespace SeaBattle
 		//!!!!!!!!!!!!!!!!!!
 		//Временная функция
 		private void OpponShips()
-		{/*
-			mOpponentsMap[0, 0] = mOpponentsMap[0, 2] = mOpponentsMap[0, 4] = mOpponentsMap[0, 6] = mOpponentsMap[0, 8] = mOpponentsMap[0, 9]
-				= mOpponentsMap[2, 0] = mOpponentsMap[2, 1] = mOpponentsMap[2, 3] = mOpponentsMap[2, 4] = mOpponentsMap[2, 6] = mOpponentsMap[2, 7] = mOpponentsMap[2, 8]
-				= mOpponentsMap[4, 0] = mOpponentsMap[4, 1] = mOpponentsMap[4, 2] = mOpponentsMap[4, 4] = mOpponentsMap[4, 5] = mOpponentsMap[4, 6] = mOpponentsMap[4, 7] = MarkType.Ship;
+		{
+			mOpponentsMap[0, 7] = mOpponentsMap[0, 6] = mOpponentsMap[0, 5] = mOpponentsMap[0, 4] = MarkType.Ship;
+			mOpponentsMap[0, 3] = mOpponentsMap[1, 3] = mOpponentsMap[1, 4] = mOpponentsMap[1, 5] = mOpponentsMap[1, 6] 
+				= mOpponentsMap[1, 7] = mOpponentsMap[1, 8] = mOpponentsMap[0, 8] =  MarkType.Indenting;
 
-			for (int i = 0; i <= 5; i++)
-				for (int j = 0; j <= 9; j++)
-				{
-					if (mOpponentsMap[i, j] != MarkType.Ship)
-						mOpponentsMap[i, j] = MarkType.Indenting;
-				}
-
-			mOpponentsMap[4, 9] = mOpponentsMap[5, 9] = MarkType.Free;*/
-
-			mOpponentsMap[1, 1] = mOpponentsMap[2, 1] = mOpponentsMap[3, 1] = mOpponentsMap[4, 1] = mOpponentsMap[6, 1] =
-				mOpponentsMap[7, 1] = mOpponentsMap[8, 1] = mOpponentsMap[1, 3] = mOpponentsMap[2, 3] = mOpponentsMap[1, 5] =
-				mOpponentsMap[1, 6] = mOpponentsMap[1, 7] = mOpponentsMap[5, 5] = mOpponentsMap[5, 6] = mOpponentsMap[7, 4] = 
-				mOpponentsMap[7, 5] = mOpponentsMap[5, 8] = mOpponentsMap[7, 6] = mOpponentsMap[7, 7] = MarkType.Ship;
-			/*
-			mOpponentsMap[0, 0]= mOpponentsMap[0, 1]= mOpponentsMap[0, 2]=
-				mOpponentsMap[1, 0]= mOpponentsMap[2, 0]= mOpponentsMap[3, 0]= mOpponentsMap[4, 0]= mOpponentsMap[5, 0]=
-				mOpponentsMap[5, 1]= mOpponentsMap[5, 2]= mOpponentsMap[4, 2]= mOpponentsMap[3, 2]= mOpponentsMap[2, 2]= mOpponentsMap[1, 2]=*/
-			for (int i = 0; i < 10; i++)
-			{
-				mOpponentsMap[i, 0] = mOpponentsMap[i, 2] = MarkType.Indenting;
-				if (i != 9)
-				{
-					mOpponentsMap[0, i] = MarkType.Indenting;
-					if (i != 7)
-						mOpponentsMap[i, 4] = MarkType.Indenting;
-				}
-				if (i >= 3 && i <= 9)
-				{
-					mOpponentsMap[6, i] = MarkType.Indenting;
-					if (i >= 4)
-						mOpponentsMap[4, i] = MarkType.Indenting;
-					if(i!=9)
-						mOpponentsMap[8, i] = MarkType.Indenting;
-				}
-			}
-			mOpponentsMap[5, 1] = mOpponentsMap[9, 1] = mOpponentsMap[7, 3] = mOpponentsMap[7, 8] = mOpponentsMap[3, 3] 
-				= mOpponentsMap[5, 9] = mOpponentsMap[5, 7] = mOpponentsMap[1, 8] = mOpponentsMap[2, 5] = mOpponentsMap[2, 6] = mOpponentsMap[2, 7]  = mOpponentsMap[2, 8] = MarkType.Indenting;
+			mOpponentsMap[3, 0] = mOpponentsMap[4, 0] = mOpponentsMap[5, 0] = mOpponentsMap[6, 0] = MarkType.Ship;
+			mOpponentsMap[2, 0] = mOpponentsMap[2, 1] = mOpponentsMap[3, 1] = mOpponentsMap[4, 1] = mOpponentsMap[5, 1]
+				= mOpponentsMap[6, 1] = mOpponentsMap[7, 1] = mOpponentsMap[7, 0] = MarkType.Indenting;
 
 		}
 
@@ -601,50 +576,50 @@ namespace SeaBattle
 		/// <param name="row"></param>
 		/// <param name="column"></param>
 		/// <returns></returns>
-		 
-			//мне не нравиться эта функция, но она работает
-			//пусть будет
+
+		//мне не нравится эта функция, но она работает
+		//пусть будет
+
+			//сбивается, если бить через клетку в один и тот же корабль
 		private bool CheckKilled(int row, int column)
 		{
-			//Если вертикальный корабль
-			
-			if (mOpponentsMap[row + 1, column] != MarkType.Indenting || mOpponentsMap[row - 1, column] != MarkType.Indenting)
-			{
-				//идем наверх
-				for (int i = row + 1; mOpponentsMap[i, column] != MarkType.Indenting; i++)
-				{
-					if (mOpponentsMap[i, column] == MarkType.Ship)
-						return false;
-				}
-				//идем вниз
-				for (int i = row - 1; mOpponentsMap[i, column] != MarkType.Indenting; i--)
-				{
-					if (mOpponentsMap[i, column] == MarkType.Ship)
-						return false;
-					
-				}
-			}
-			else
-			if (mOpponentsMap[row, column + 1] != MarkType.Indenting || mOpponentsMap[row, column - 1] != MarkType.Indenting)
-			{
-				//горизонтальный корабль
-				//идем впрево
-				for (int i = column + 1; mOpponentsMap[row, i] != MarkType.Indenting; i++)
-				{
-					if (mOpponentsMap[row, i] == MarkType.Ship)
-						return false;
-				}
-				//идем влево
-				for (int i = column - 1; mOpponentsMap[row, i] != MarkType.Indenting; i--)
-				{
-					if (mOpponentsMap[row, i] == MarkType.Ship)
-						return false;
-				}
-			}
-			else //Однопалубный
-				return true;
+			int i = 1;
 
-			return true;
+			//вертикальный корабль
+			//идем вверх
+			while (CheckCell(row + i, column) == true && mOpponentsMap[row + i, column] != MarkType.Indenting)
+			{
+				if (mOpponentsMap[row + i, column] == MarkType.Ship) return false;
+				i = i + 1;
+			}
+
+			//вертикальный корабль
+			//идем вниз
+			i = 1;
+			while (CheckCell(row - i, column) == true && mOpponentsMap[row - i, column] != MarkType.Indenting)
+			{
+				if (mOpponentsMap[row - i, column] == MarkType.Ship) return false;
+				i = i - 1;
+			}
+
+			//горизонтальный корабль
+			//идем вправо
+			i = 1;
+			while (CheckCell(row, column + i) == true && mOpponentsMap[row, column + i] != MarkType.Indenting)
+			{
+				if (mOpponentsMap[row, column + i] == MarkType.Ship) return false;
+				i = i + 1;
+			}
+
+			//горизонтальный корабль
+			//идем влево
+			i = 1;
+			while (CheckCell(row, column - i) == true && mOpponentsMap[row, column - i] != MarkType.Indenting)
+			{
+				if (mOpponentsMap[row, column - 1] == MarkType.Ship) return false;
+				i = i - 1;
+			}
+			return true;		
 		}
 	}
 }
