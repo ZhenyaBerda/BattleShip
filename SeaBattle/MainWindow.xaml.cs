@@ -1,4 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,39 +16,53 @@ namespace SeaBattle
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		//Сокет
+		static Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+		//	static public byte[] buffer = new byte[10000];
+		static MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
+		static BinaryReader binaryReader = new BinaryReader(memoryStream);
+		static BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
+
+		static int code;
+		/// ///////////
+		/// 
+		static Player mPlayer = new Player(null, false);
+		static PlProgress plProgress = new PlProgress(0, 0, 0);
+		static PlProgress opProgress = new PlProgress(0, 0, 0);
+
+		//static Player mOpponent = new Player(null, false, null, 0, 0);
+
 		//Поле игрока
 		public Button[,] playersBoxes = new Button[10, 10];
+		private MarkType[,] mPlayersMap;
 		//Поле противника
 		public Button[,] oppBoxes = new Button[10, 10];
+		private MarkType[,] mOpponentsMap;
 		//
-		private MarkType[,] mPlayersMap;
+
 
 		private int mSingle = 4, mDouble = 3, mThree = 2, mFour = 1;
 		//Количество кораблей
 		private int mPShips;
 		private int mOShips;
-		//
-		private MarkType[,] mOpponentsMap;
-		public bool mOpponent;
-		// Переменная, которая отслеживает ходы игрока
-		private bool mPlayerTurn;
-		//Переменная, которая отслеживает ходы противника
-		private bool mOpponentTurn;
+
 		//true - конец игры
-		private bool mGameEnded;
+		static public bool mGameEnded = true;
 
 		public MainWindow()
 		{
-			LoginWin logWin = new LoginWin();
-			logWin.ShowDialog();
-			mOpponent = logWin.mOpponent;
-			if (mOpponent == true)
+			InitializeComponent();
+			StartGame.IsEnabled = false;
+			StatusBox.Text = "Введите имя пользователя и подключитесь к серверу";
+			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
 			{
-				InitializeComponent();
-				this.Title = "Морской бой. " + logWin.mName;
-				NewGame();
-			}
+				button.IsEnabled = false;
+			});
 
+			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
+			{
+				button.IsEnabled = false;
+			});
 		}
 
 		/// <summary>
@@ -55,7 +74,7 @@ namespace SeaBattle
 			StatusBox.IsEnabled = false;
 			mOShips = 10;
 			mPShips = 0;
-			StatusBox.Text = "Расставьте корабли";
+			//StatusBox.Text = "Расставьте корабли";
 
 			//Саздаем массивы свободных ячеек игроков
 			mPlayersMap = new MarkType[10, 10];
@@ -69,23 +88,10 @@ namespace SeaBattle
 					mOpponentsMap[y, x] = MarkType.Free;
 				}
 
-			mPlayerTurn = true;
-
 			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
 			{
-				//int i = 0, j = 0;
 				button.Background = Brushes.LightSkyBlue;
-				//mPlayersButton[i, j] = button;
-				//i++; j++;
 			});
-
-			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
-			{
-				button.IsEnabled = false;
-			});
-
-			//Игра не закончена 
-			mGameEnded = false;
 		}
 
 		//Функция/события, связанные с расстановкой кораблей
@@ -98,340 +104,369 @@ namespace SeaBattle
 		/// <param name="e"></param>
 		private void POnceButton_Click(object sender, RoutedEventArgs e)
 		{
-			//Однопалубные корабли
-			if (Single.IsChecked == true && mSingle != 0)
+			if (mPShips == 10)
 			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				//Проверяем, свободна ли ячейка
-				if (mPlayersMap[row, column] != MarkType.Free)
-				{
-					MessageBox.Show("Выберите другую ячейку!");
-					return;
-				}
-				//Устанавливаем корабль
-				MarkInd(row, column, 1, 1);
-				mPlayersMap[row, column] = MarkType.Ship;
-				//Изменяем цвета кнопок и их доступность (?)
-				button.Background = Brushes.MediumSeaGreen;
-				//	mPlayersButton[row, column].Background = Brushes.MediumSeaGreen;
-
-				//Уменьшаем количество доступных кораблей
-				mSingle = mSingle - 1;
-				mPShips++;
-				if (mSingle == 0)
-				{
-					Single.IsChecked = false;
-					Single.IsEnabled = false;
-				}
+				return;
 			}
-			//Двухпалубные корабли
-			//Горизонтальная ориентация
-			if (Double.IsChecked == true && mDouble != 0 && Horizontally.IsChecked == true)
+			else
 			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				//Проверяем, что корабль не выходит за границы поля
-				if (CheckCell(row, column) == true && CheckCell(row, column - 1) == true)
+				//Однопалубные корабли
+				if (Single.IsChecked == true && mSingle != 0)
 				{
-					//Проверяем, свободны ли ячейки
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
+
+					//Проверяем, свободна ли ячейка
 					if (mPlayersMap[row, column] != MarkType.Free)
 					{
 						MessageBox.Show("Выберите другую ячейку!");
 						return;
 					}
-					else
-					if (mPlayersMap[row, column - 1] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					//Изменяем типы ячеек
-					MarkInd(row, column, 2, 1);
 					//Устанавливаем корабль
-					MarkShipHor(row, column, button, 2);
+					MarkInd(row, column, 1, 1);
+					mPlayersMap[row, column] = MarkType.Ship;
+					//Изменяем цвета кнопок и их доступность (?)
+					button.Background = Brushes.MediumSeaGreen;
+					//	mPlayersButton[row, column].Background = Brushes.MediumSeaGreen;
 
 					//Уменьшаем количество доступных кораблей
-					mDouble = mDouble - 1;
+					mSingle = mSingle - 1;
 					mPShips++;
-
-					if (mDouble == 0)
+					if (mSingle == 0)
 					{
-						Double.IsChecked = false;
-						Double.IsEnabled = false;
+						Single.IsChecked = false;
+						Single.IsEnabled = false;
 					}
 				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
-
-			}
-			//Вертикальная ориентация
-			if (Double.IsChecked == true && mDouble != 0 && Vertically.IsChecked == true)
-			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-				//Проверяем выход корабля за поле
-				if (CheckCell(row - 1, column) == true && CheckCell(row, column) == true)
+				//Двухпалубные корабли
+				//Горизонтальная ориентация
+				if (Double.IsChecked == true && mDouble != 0 && Horizontally.IsChecked == true)
 				{
-					//Проверяем, свободны ли ячейки
-					if (mPlayersMap[row, column] != MarkType.Free)
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
+
+					//Проверяем, что корабль не выходит за границы поля
+					if (CheckCell(row, column) == true && CheckCell(row, column - 1) == true)
 					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 1] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						//Изменяем типы ячеек
+						MarkInd(row, column, 2, 1);
+						//Устанавливаем корабль
+						MarkShipHor(row, column, button, 2);
+
+						//Уменьшаем количество доступных кораблей
+						mDouble = mDouble - 1;
+						mPShips++;
+
+						if (mDouble == 0)
+						{
+							Double.IsChecked = false;
+							Double.IsEnabled = false;
+						}
 					}
 					else
-				if (mPlayersMap[row - 1, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
+						MessageBox.Show("Корабль выходит за границы поля!");
 
-					//Изменяем типы ячеек
-					MarkInd(row, column, 1, 2);
-					//Устанавливаем корабль
-					MarkShipVer(row, column, button, 2);
-
-					//Уменьшаем количество доступных кораблей
-					mDouble = mDouble - 1;
-					mPShips++;
-
-					if (mDouble == 0)
-					{
-						Double.IsChecked = false;
-						Double.IsEnabled = false;
-					}
 				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
-			}
-			//Трёхпалубные корабли
-			//Горизонтальная ориентация
-			if (Three.IsChecked == true && mThree != 0 && Horizontally.IsChecked == true)
-			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				if (CheckCell(row, column - 1) == true && CheckCell(row, column - 2) == true)
+				//Вертикальная ориентация
+				if (Double.IsChecked == true && mDouble != 0 && Vertically.IsChecked == true)
 				{
-					//Проверяем, свободны ли ячейки
-					if (mPlayersMap[row, column] != MarkType.Free)
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
+					//Проверяем выход корабля за поле
+					if (CheckCell(row - 1, column) == true && CheckCell(row, column) == true)
 					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row, column - 1] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row, column - 2] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					//Изменяем типы ячеек
-					MarkInd(row, column, 3, 1);
-					//Устанавливаем  корабль
-					MarkShipHor(row, column, button, 3);
-					//Уменьшаем количество доступных кораблей
-					mThree = mThree - 1;
-					mPShips++;
-
-					if (mThree == 0)
-					{
-						Three.IsChecked = false;
-						Three.IsEnabled = false;
-					}
-				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
-			}
-			//Вертикальная ориентация
-			if (Three.IsChecked == true && mThree != 0 && Vertically.IsChecked == true)
-			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				if (CheckCell(row - 1, column) == true && CheckCell(row - 2, column) == true)
-				{
-					//Проверяем, свободны ли ячейки
-					if (mPlayersMap[row, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
 					if (mPlayersMap[row - 1, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+
+						//Изменяем типы ячеек
+						MarkInd(row, column, 1, 2);
+						//Устанавливаем корабль
+						MarkShipVer(row, column, button, 2);
+
+						//Уменьшаем количество доступных кораблей
+						mDouble = mDouble - 1;
+						mPShips++;
+
+						if (mDouble == 0)
+						{
+							Double.IsChecked = false;
+							Double.IsEnabled = false;
+						}
 					}
 					else
-					if (mPlayersMap[row - 2, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					MarkInd(row, column, 1, 3);
-					//Устанавливаем корабль
-					MarkShipVer(row, column, button, 3);
-					//Уменьшаем количество доступных кораблей
-					mThree = mThree - 1;
-					mPShips++;
-
-					if (mThree == 0)
-					{
-						Three.IsChecked = false;
-						Three.IsEnabled = false;
-					}
+						MessageBox.Show("Корабль выходит за границы поля!");
 				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
-			}
-			//Четырёхпалубные корабли
-			//Горизонтальная ориентация
-			if (Four.IsChecked == true && mFour != 0 && Horizontally.IsChecked == true)
-			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				if (CheckCell(row, column - 1) == true && CheckCell(row, column - 2) == true && CheckCell(row, column - 3) == true)
+				//Трёхпалубные корабли
+				//Горизонтальная ориентация
+				if (Three.IsChecked == true && mThree != 0 && Horizontally.IsChecked == true)
 				{
-					//Проверяем, свободны ли ячейки
-					if (mPlayersMap[row, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row, column - 1] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row, column - 2] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row, column - 3] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
 
-					MarkInd(row, column, 4, 1);
-					//Устанавливаем корабль
-					MarkShipHor(row, column, button, 4);
-					//Уменьшаем количество доступных кораблей
-					mFour = mFour - 1;
-					mPShips++;
-
-					if (mFour == 0)
+					if (CheckCell(row, column - 1) == true && CheckCell(row, column - 2) == true)
 					{
-						Four.IsChecked = false;
-						Four.IsEnabled = false;
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 1] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 2] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						//Изменяем типы ячеек
+						MarkInd(row, column, 3, 1);
+						//Устанавливаем  корабль
+						MarkShipHor(row, column, button, 3);
+						//Уменьшаем количество доступных кораблей
+						mThree = mThree - 1;
+						mPShips++;
+
+						if (mThree == 0)
+						{
+							Three.IsChecked = false;
+							Three.IsEnabled = false;
+						}
 					}
+					else
+						MessageBox.Show("Корабль выходит за границы поля!");
 				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
-			}
-			//Вертикальная ориентация
-			if (Four.IsChecked == true && mFour != 0 && Vertically.IsChecked == true)
-			{
-				//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
-				var button = (Button)sender;
-				//Столбец = координата X
-				var column = Grid.GetColumn(button);
-				//Строка = координата Y
-				var row = Grid.GetRow(button);
-
-				if (CheckCell(row - 1, column) == true && CheckCell(row - 2, column) == true && CheckCell(row - 3, column) == true)
+				//Вертикальная ориентация
+				if (Three.IsChecked == true && mThree != 0 && Vertically.IsChecked == true)
 				{
-					//Проверяем, свободны ли ячейки
-					if (mPlayersMap[row, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row - 1, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row - 2, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
-					else
-					if (mPlayersMap[row - 3, column] != MarkType.Free)
-					{
-						MessageBox.Show("Выберите другую ячейку!");
-						return;
-					}
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
 
-					MarkInd(row, column, 1, 4);
-					//Устанавливаем корабль
-					MarkShipVer(row, column, button, 4);
-					//Уменьшаем количество доступных кораблей
-					mFour = mFour - 1;
-					mPShips++;
-
-					if (mFour == 0)
+					if (CheckCell(row - 1, column) == true && CheckCell(row - 2, column) == true)
 					{
-						Four.IsChecked = false;
-						Four.IsEnabled = false;
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row - 1, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row - 2, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						MarkInd(row, column, 1, 3);
+						//Устанавливаем корабль
+						MarkShipVer(row, column, button, 3);
+						//Уменьшаем количество доступных кораблей
+						mThree = mThree - 1;
+						mPShips++;
+
+						if (mThree == 0)
+						{
+							Three.IsChecked = false;
+							Three.IsEnabled = false;
+						}
 					}
+					else
+						MessageBox.Show("Корабль выходит за границы поля!");
 				}
-				else
-					MessageBox.Show("Корабль выходит за границы поля!");
+				//Четырёхпалубные корабли
+				//Горизонтальная ориентация
+				if (Four.IsChecked == true && mFour != 0 && Horizontally.IsChecked == true)
+				{
+					//При нажатии на конпку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
+
+					if (CheckCell(row, column - 1) == true && CheckCell(row, column - 2) == true && CheckCell(row, column - 3) == true)
+					{
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 1] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 2] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row, column - 3] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+
+						MarkInd(row, column, 4, 1);
+						//Устанавливаем корабль
+						MarkShipHor(row, column, button, 4);
+						//Уменьшаем количество доступных кораблей
+						mFour = mFour - 1;
+						mPShips++;
+
+						if (mFour == 0)
+						{
+							Four.IsChecked = false;
+							Four.IsEnabled = false;
+						}
+					}
+					else
+						MessageBox.Show("Корабль выходит за границы поля!");
+				}
+				//Вертикальная ориентация
+				if (Four.IsChecked == true && mFour != 0 && Vertically.IsChecked == true)
+				{
+					//При нажатии на кнопку на поле, вычисляем, какую кнопку выбрали
+					var button = (Button)sender;
+					//Столбец = координата X
+					var column = Grid.GetColumn(button);
+					//Строка = координата Y
+					var row = Grid.GetRow(button);
+
+					if (CheckCell(row - 1, column) == true && CheckCell(row - 2, column) == true && CheckCell(row - 3, column) == true)
+					{
+						//Проверяем, свободны ли ячейки
+						if (mPlayersMap[row, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row - 1, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row - 2, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+						else
+						if (mPlayersMap[row - 3, column] != MarkType.Free)
+						{
+							MessageBox.Show("Выберите другую ячейку!");
+							return;
+						}
+
+						MarkInd(row, column, 1, 4);
+						//Устанавливаем корабль
+						MarkShipVer(row, column, button, 4);
+						//Уменьшаем количество доступных кораблей
+						mFour = mFour - 1;
+						mPShips++;
+
+						if (mFour == 0)
+						{
+							Four.IsChecked = false;
+							Four.IsEnabled = false;
+						}
+					}
+					else
+						MessageBox.Show("Корабль выходит за границы поля!");
+				}
+
 			}
 		}
 
 		/// <summary>
-		/// Находит кнопку по заданной ячейке Grid
+		/// Находит кнопку на поле игрока по заданной ячейке Grid
 		/// </summary>
 		/// <param name="row"></param>
 		/// <param name="column"></param>
 		/// <returns></returns>
-		private Button GetButton(int row, int column)
+		private Button GetButtonPlayer(int row, int column)
 		{
 			Button btn = null;
 
 			foreach (Button b in MapPlayer.Children)
+			{
+				if (Grid.GetRow(b) == row && Grid.GetColumn(b) == column)
+				{
+					btn = b;
+					break;
+				}
+			}
+			return btn;
+		}
+
+		/// <summary>
+		/// Находит кнопку на поле противника
+		/// </summary>
+		/// <param name="row"></param>
+		/// <param name="column"></param>
+		/// <returns></returns>
+		private Button GetButtonOpponent(int row, int column)
+		{
+			Button btn = null;
+
+			foreach (Button b in MapOpponent.Children)
 			{
 				if (Grid.GetRow(b) == row && Grid.GetColumn(b) == column)
 				{
@@ -467,7 +502,7 @@ namespace SeaBattle
 			for (int i = column - n + 1; i <= column; i++)
 			{
 				mPlayersMap[row, i] = MarkType.Ship;
-				btn = GetButton(row, i);
+				btn = GetButtonPlayer(row, i);
 				btn.Background = Brushes.MediumSeaGreen;
 			}
 
@@ -485,7 +520,7 @@ namespace SeaBattle
 			for (int i = row - n + 1; i <= row; i++)
 			{
 				mPlayersMap[i, column] = MarkType.Ship;
-				btn = GetButton(i, column);
+				btn = GetButtonPlayer(i, column);
 				btn.Background = Brushes.MediumSeaGreen;
 			}
 		}
@@ -504,70 +539,114 @@ namespace SeaBattle
 				return true;
 		}
 
-		//!!!!!!!!!!!!!!!!!!
-		//Временная функция
-		private void OpponShips()
-		{
-			mOpponentsMap[0, 7] = mOpponentsMap[0, 6] = mOpponentsMap[0, 5] = mOpponentsMap[0, 4] = MarkType.Ship;
-			mOpponentsMap[0, 3] = mOpponentsMap[1, 3] = mOpponentsMap[1, 4] = mOpponentsMap[1, 5] = mOpponentsMap[1, 6] 
-				= mOpponentsMap[1, 7] = mOpponentsMap[1, 8] = mOpponentsMap[0, 8] =  MarkType.Indenting;
-
-			mOpponentsMap[3, 0] = mOpponentsMap[4, 0] = mOpponentsMap[5, 0] = mOpponentsMap[6, 0] = MarkType.Ship;
-			mOpponentsMap[2, 0] = mOpponentsMap[2, 1] = mOpponentsMap[3, 1] = mOpponentsMap[4, 1] = mOpponentsMap[5, 1]
-				= mOpponentsMap[6, 1] = mOpponentsMap[7, 1] = mOpponentsMap[7, 0] = MarkType.Indenting;
-
-		}
-
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//Игровой процесс
 
 		private void StartGame_Click(object sender, RoutedEventArgs e)
+		{
+			if (mPShips == 10)
+			{
+				SendPacket(PacketInfo.ReadyToPlay);
+
+				OpponentsMap();
+
+				StartGame.IsEnabled = false;
+
+				Task.Run(() =>
+				{
+					while (true)
+					{
+						ReceivePacket();
+						Task.Delay(1000);
+					}
+				});
+			}
+			else
+				MessageBox.Show("Расставьте свои корабли!");
+		}
+
+		public void OpponentsMap()
 		{
 			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
 			{
 				button.Background = Brushes.LightSkyBlue;
 				button.IsEnabled = true;
 			});
-			OpponShips();
+		}
+
+		public void PlayersMap()
+		{
+			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
+			{
+				button.Background = Brushes.LightSkyBlue;
+				button.IsEnabled = true;
+			});
+		}
+
+		public void OpponentAttack()
+		{
+			if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Ship)
+			{
+				if (CheckKilled(opProgress.Row, opProgress.Column) == true)
+					opProgress.intMark = (int)MarkType.Kill;
+				else
+					opProgress.intMark = (int)MarkType.Hit;
+				Button btn = GetButtonPlayer(opProgress.Row, opProgress.Column);
+				btn.Background = Brushes.Red;
+			}
+			
+			if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Free || mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Indenting)
+			{
+				opProgress.intMark = (int)MarkType.Miss;
+				Button btn = GetButtonPlayer(opProgress.Row, opProgress.Column);
+				btn.Background = Brushes.Gray;
+			}
+
+			SendPacket(PacketInfo.AttackAnswer);
 		}
 
 		private void Attack_Click(object sender, RoutedEventArgs e)
 		{
-			mPlayerTurn = true;
-			//	mOpponentTurn = false;
-
-			if (mPlayerTurn == true)
+			if (mPlayer.Progress == true && mGameEnded != true)
 			{
-				StatusBox.Text = "Ваш ход";
 				//Находим координаты точки атаки
 				var button = (Button)sender;
 				//Столбец = координата X
-				var column = Grid.GetColumn(button);
+				plProgress.Column = Grid.GetColumn(button);
 				//Строка = координата Y
-				var row = Grid.GetRow(button);
+				plProgress.Row = Grid.GetRow(button);
 
-				if (mOpponentsMap[row, column] == MarkType.Ship)
-				{
-					mOpponentsMap[row, column] = MarkType.Kill;
-					button.Background = Brushes.Red;
-					//Определяем, попадение в корабль или полное уничтожение
-					if (CheckKilled(row, column) == true)
-					{
-						//mOShips = mOShips - 1;
-						StatusBox.Text = "Корабль противника потоплен!";
-					}
-					else
-						//MessageBox.Show("Попал!");
-						StatusBox.Text = "Попадение!";
-				}
+				SendPacket(PacketInfo.GameInfo);
 
-				if (mOpponentsMap[row, column] == MarkType.Free)
-				{
-					mOpponentsMap[row, column] = MarkType.Miss;
-					button.Background = Brushes.Gray;
-				}
+				Task.Run(()=> { while (true) ReceivePacket(); });
+				CheckPacket();
+			}
+			else
+			{
+				if (mPlayer.Progress == false)
+					MessageBox.Show("Дождитесь своего хода!");
 			}
 
+		}
+
+		private void ConnectionButton_Click(object sender, RoutedEventArgs e)
+		{
+			//Записываем логин
+			mPlayer.Name = LoginBox.Text;
+			LoginBox.IsEnabled = false;
+
+			//Подключаемся к серверу
+			socket.Connect("127.0.0.1", 2048);
+
+			SendPacket(PacketInfo.StartPacket);
+
+			ReceivePacket();
+
+			StatusBox.Text = "Расставьте свои корабли";
+			StartGame.IsEnabled = true;
+			ConnectionButton.IsEnabled = false;
+			PlayersMap();
+			NewGame();
 		}
 
 		/// <summary>
@@ -580,46 +659,173 @@ namespace SeaBattle
 		//мне не нравится эта функция, но она работает
 		//пусть будет
 
-			//сбивается, если бить через клетку в один и тот же корабль
+		//сбивается, если бить через клетку в один и тот же корабль
 		private bool CheckKilled(int row, int column)
 		{
 			int i = 1;
 
 			//вертикальный корабль
 			//идем вверх
-			while (CheckCell(row + i, column) == true && mOpponentsMap[row + i, column] != MarkType.Indenting)
+			while (CheckCell(row + i, column) == true && mPlayersMap[row + i, column] != MarkType.Indenting)
 			{
-				if (mOpponentsMap[row + i, column] == MarkType.Ship) return false;
+				if (mPlayersMap[row + i, column] == MarkType.Ship) return false;
 				i = i + 1;
 			}
-
+		
 			//вертикальный корабль
 			//идем вниз
 			i = 1;
-			while (CheckCell(row - i, column) == true && mOpponentsMap[row - i, column] != MarkType.Indenting)
+			while (CheckCell(row - i, column) == true && mPlayersMap[row - i, column] != MarkType.Indenting)
 			{
-				if (mOpponentsMap[row - i, column] == MarkType.Ship) return false;
+				if (mPlayersMap[row - i, column] == MarkType.Ship) return false;
 				i = i - 1;
 			}
 
 			//горизонтальный корабль
 			//идем вправо
 			i = 1;
-			while (CheckCell(row, column + i) == true && mOpponentsMap[row, column + i] != MarkType.Indenting)
+			while (CheckCell(row, column + i) == true && mPlayersMap[row, column + i] != MarkType.Indenting)
 			{
-				if (mOpponentsMap[row, column + i] == MarkType.Ship) return false;
+				if (mPlayersMap[row, column + i] == MarkType.Ship) return false;
 				i = i + 1;
 			}
 
 			//горизонтальный корабль
 			//идем влево
 			i = 1;
-			while (CheckCell(row, column - i) == true && mOpponentsMap[row, column - i] != MarkType.Indenting)
+			while (CheckCell(row, column - i) == true && mPlayersMap[row, column - i] != MarkType.Indenting)
 			{
-				if (mOpponentsMap[row, column - 1] == MarkType.Ship) return false;
+				if (mPlayersMap[row, column - 1] == MarkType.Ship) return false;
 				i = i - 1;
 			}
 			return true;		
+		}
+
+		public void AttackSuccess(int column, int row)
+		{
+			if (opProgress.intMark == (int)MarkType.Hit)
+			{
+				StatusBox.Text = "Попадение!";
+				mOpponentsMap[row, column] = MarkType.Hit;
+			}
+			if (mOpponentsMap[row, column] == MarkType.Kill)
+			{
+				StatusBox.Text = "Корабль потоплен!";
+				mOpponentsMap[row, column] = MarkType.Kill;
+			}
+
+			Button btn = GetButtonOpponent(row, column);
+			btn.Background = Brushes.Red;
+		}
+
+		public void AttackMiss(int row, int column)
+		{
+			mOpponentsMap[row, column] = MarkType.Miss;
+
+			Button btn = GetButtonOpponent(row, column);
+			btn.Background = Brushes.Gray;
+		}
+		public void CheckPacket()
+		{
+			if (plProgress.intMark == (int)MarkType.Hit || plProgress.intMark == (int)MarkType.Kill)
+				AttackSuccess(plProgress.Column, plProgress.Row);
+
+			if (plProgress.intMark == (int)MarkType.Miss)
+				AttackMiss(plProgress.Row, plProgress.Column);
+		}
+
+		///////////// Функции, связанные с взаимодействием с сервером
+		public enum PacketInfo
+		{
+			StartPacket,
+			ReadyToPlay,
+			GameInfo,
+			AttackAnswer
+		}
+
+		
+
+		//Получение пакета об результате атаки
+		public void ReceivePacket()
+		{
+			memoryStream.Position = 0;
+			socket.Receive(memoryStream.GetBuffer());
+
+			code = binaryReader.ReadInt32();
+
+			switch (code)
+			{
+				case 0:
+					mGameEnded = true;
+					Dispatcher.Invoke(() => StatusBox.Text = "Противник не поставил корабли");
+					break;
+				case 1:
+					mGameEnded = false;
+					mPlayer.Progress = binaryReader.ReadBoolean();
+					if (mPlayer.Progress == true)
+						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
+					else
+						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
+					break;
+				//Координаты атаки противника
+				case 2:
+					opProgress.Column = binaryReader.ReadInt32();
+					opProgress.Row = binaryReader.ReadInt32();
+					Dispatcher.Invoke(() => OpponentAttack());
+					break;
+				//Ответ на атаку
+				case 3:
+					plProgress.intMark = binaryReader.ReadInt32();
+					break;
+					//Определение хода
+				case 4:
+					mPlayer.Progress = binaryReader.ReadBoolean();
+					if (mPlayer.Progress==true)
+						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
+					else
+						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
+					break;
+
+				case 10:
+					mPlayer.ID = binaryReader.ReadInt32();
+					break;
+			}
+		}
+
+		public void SendPacket(PacketInfo info)
+		{
+			memoryStream.Position = 0;
+
+			switch (info)
+			{
+				//Стартовый пакет, содержащий имя пользователя
+				case PacketInfo.StartPacket: 
+					binaryWriter.Write(0);
+					binaryWriter.Write(mPlayer.Name);
+					socket.Send(memoryStream.GetBuffer());
+					break;
+				//Пакет, готоворящий о том, что игрок готов к игре
+				case PacketInfo.ReadyToPlay:
+					binaryWriter.Write(1);
+					binaryWriter.Write(mPlayer.ID);
+					//binaryWriter.Write(mPlayer.Status);
+					socket.Send(memoryStream.GetBuffer());
+					break;
+				//Пакет, содержащий координаты выстрела
+				case PacketInfo.GameInfo:
+					binaryWriter.Write(2);
+				//	binaryWriter.Write(mPlayer.ID);
+					binaryWriter.Write(plProgress.Column);
+					binaryWriter.Write(plProgress.Row);
+					socket.Send(memoryStream.GetBuffer());
+					break;
+				//Ответ на атаку соперника
+				case PacketInfo.AttackAnswer:
+					binaryWriter.Write(3);
+					binaryWriter.Write(opProgress.intMark);
+					socket.Send(memoryStream.GetBuffer());
+					break;
+			}
 		}
 	}
 }

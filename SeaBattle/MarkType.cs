@@ -3,19 +3,19 @@
 	/// <summary>
 	/// Указывает тип ячейки
 	/// </summary>
-    public enum MarkType
-    {
+	public enum MarkType
+	{
 		//Ячейку еще не нажимали
-		Free,
+		Free = 1,
 		//попадение
-		//Hit, 
+		Hit = 2,
 		//Убит
-		Kill,
+		Kill = 3,
 		//Пустые клетки у кораблей (???)
-		Indenting,
+		Indenting = 4,
 		//Для поля игрока, положение корабля
-		Ship,
+		Ship = 5,
 		//Промах
-		Miss
+		Miss = 6
 	}
 }
