@@ -287,7 +287,7 @@
         </Grid>
         <Button x:Name="StartGame" Content="Начать игру" HorizontalAlignment="Left" Margin="252,606,0,0" VerticalAlignment="Top" Width="188" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="StartGame_Click"/>
         <Label Content="Статус игры:" HorizontalAlignment="Left" Margin="560,458,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.643,-0.145" Height="35" Width="121" FontSize="18" FontFamily="Nirmala UI"/>
-        <TextBox x:Name="StatusBox" HorizontalAlignment="Left" Height="31" Margin="681,462,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
+        <TextBox x:Name="StatusBox" HorizontalAlignment="Left" Height="69" Margin="681,462,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
         <Label Content="Корабли:" HorizontalAlignment="Left" Margin="58,459,0,0" VerticalAlignment="Top" FontSize="18"/>
         <StackPanel HorizontalAlignment="Left" Height="96" Margin="58,498,0,0" VerticalAlignment="Top" Width="189">
             <RadioButton x:Name="Single" Content="Однопалубный" FontSize="18" GroupName="Ships" />
@@ -301,6 +301,8 @@
         </StackPanel>
         <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="40" Margin="536,606,0,0" TextWrapping="Wrap" Text="Логин" VerticalAlignment="Top" Width="214" FontSize="20"/>
         <Button x:Name="ConnectionButton" Content="Подключиться" HorizontalAlignment="Left" Margin="814,606,0,0" VerticalAlignment="Top" Width="146" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="ConnectionButton_Click"/>
+        <TextBox x:Name="StatusBoxInteral" HorizontalAlignment="Left" Height="58" Margin="681,536,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
+        <Label Content="Аттака:" HorizontalAlignment="Left" Margin="560,536,0,0" VerticalAlignment="Top" FontSize="18" FontFamily="Nirmala UI"/>
 
 
     </Grid>

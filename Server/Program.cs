@@ -11,6 +11,7 @@ namespace Server
 	{
 		static int count = 0;
 		static int k = 0;
+		//bool attackSuccsess = false;
 
 		class Client
 		{
@@ -82,7 +83,8 @@ namespace Server
 
 				int code = binaryReader.ReadInt32();
 				int mark;
-				int column, row, id;
+				int column, row, ships;
+				bool attackSuccess;
 
 				switch (code)
 				{
@@ -100,22 +102,19 @@ namespace Server
 
 							break;
 						}
-
-
-
 						break;
 					//Содержит готовность игроков к игре
 					case 1:
-						Console.WriteLine($"{client.Name} расставил корабли и готов к игре");
-						k = k + 1;
+							Console.WriteLine($"{client.Name} расставил корабли и готов к игре");
+							k = k + 1;
 
-						if (k != 2)
-						{
-							memoryStream.Position = 0;
-							binaryWriter.Write(0);
-							client.Socket.Send(memoryStream.GetBuffer());
-							break;
-						}
+							if (k != 2)
+							{
+								memoryStream.Position = 0;
+								binaryWriter.Write(0);
+								client.Socket.Send(memoryStream.GetBuffer());
+								break;
+							}
 
 						if (k == 2)
 						{
@@ -138,7 +137,6 @@ namespace Server
 									c.Socket.Send(memoryStream.GetBuffer());
 								}
 							}
-							break;
 						}
 						break;
 
@@ -165,53 +163,87 @@ namespace Server
 					case 3:
 						mark = binaryReader.ReadInt32();
 						if (mark == 2 || mark == 3)
+						{
 							Console.WriteLine("успешно!");
+							attackSuccess = true;
+						}
 						else
+						{
 							Console.WriteLine("мимо!");
+							attackSuccess = false;
+						}
+						foreach (var c in clients)
+						{
+							if (c != client)
+							{
+								memoryStream.Position = 0;
+								binaryWriter.Write(3);
+								binaryWriter.Write(attackSuccess);
+								binaryWriter.Write(mark);
+								c.Socket.Send(memoryStream.GetBuffer());
+							}
+						}
+						break;
 
-						memoryStream.Position = 0;
-						binaryWriter.Write(3);
-						binaryWriter.Write(mark);
-						client.Socket.Send(memoryStream.GetBuffer());
-
-
-						if (mark == 2 || mark == 3)
+					case 4:
+						attackSuccess = binaryReader.ReadBoolean();
+						ships = binaryReader.ReadInt32();
+					//	Console.WriteLine(ships);
+						if (ships == 0)
 						{
 							foreach (var c in clients)
 							{
-								if (c != client)
-								{
-									memoryStream.Position = 0;
-									binaryWriter.Write(4);
-									binaryWriter.Write(true);
-									c.Socket.Send(memoryStream.GetBuffer());
-								}
+								memoryStream.Position = 0;
+								binaryWriter.Write(5);
+								if (c == client)
+									binaryWriter.Write("Победа!");
 								else
-								{
-									memoryStream.Position = 0;
-									binaryWriter.Write(4);
-									binaryWriter.Write(false);
-									c.Socket.Send(memoryStream.GetBuffer());
-								}
+									binaryWriter.Write("Вы проиграли :с");
+								c.Socket.Send(memoryStream.GetBuffer());
 							}
 						}
 						else
 						{
-							foreach (var c in clients)
+							if (attackSuccess == true)
 							{
-								if (c != client)
+								foreach (var c in clients)
 								{
-									memoryStream.Position = 0;
-									binaryWriter.Write(4);
-									binaryWriter.Write(false);
-									c.Socket.Send(memoryStream.GetBuffer());
+									if (c == client)
+									{
+										memoryStream.Position = 0;
+										binaryWriter.Write(4);
+										binaryWriter.Write(true);
+										c.Socket.Send(memoryStream.GetBuffer());
+										Console.WriteLine($"{c.Name}: атака");
+									}
+									else
+									{
+										memoryStream.Position = 0;
+										binaryWriter.Write(4);
+										binaryWriter.Write(false);
+										c.Socket.Send(memoryStream.GetBuffer());
+									}
 								}
-								else
+							}
+							else
+							{
+								foreach (var c in clients)
 								{
-									memoryStream.Position = 0;
-									binaryWriter.Write(4);
-									binaryWriter.Write(true);
-									c.Socket.Send(memoryStream.GetBuffer());
+									if (c == client)
+									{
+										memoryStream.Position = 0;
+										binaryWriter.Write(4);
+										binaryWriter.Write(false);
+										c.Socket.Send(memoryStream.GetBuffer());
+									}
+									else
+									{
+										memoryStream.Position = 0;
+										binaryWriter.Write(4);
+										binaryWriter.Write(true);
+										c.Socket.Send(memoryStream.GetBuffer());
+										Console.WriteLine($"{c.Name}: атака");
+									}
 								}
 							}
 						}

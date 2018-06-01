@@ -22,7 +22,7 @@ namespace SeaBattle
 		static MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
 		static BinaryReader binaryReader = new BinaryReader(memoryStream);
 		static BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
-
+		static bool attackSuccess;
 		static int code;
 		/// ///////////
 		/// 
@@ -53,6 +53,8 @@ namespace SeaBattle
 		{
 			InitializeComponent();
 			StartGame.IsEnabled = false;
+			StatusBox.IsEnabled = false;
+			StatusBoxInteral.IsEnabled = false;
 			StatusBox.Text = "Введите имя пользователя и подключитесь к серверу";
 			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
 			{
@@ -70,9 +72,7 @@ namespace SeaBattle
 		/// </summary>
 		public void NewGame()
 		{
-
-			StatusBox.IsEnabled = false;
-			mOShips = 10;
+			mOShips = 20;
 			mPShips = 0;
 			//StatusBox.Text = "Расставьте корабли";
 
@@ -92,6 +92,8 @@ namespace SeaBattle
 			{
 				button.Background = Brushes.LightSkyBlue;
 			});
+
+			mGameEnded = false;
 		}
 
 		//Функция/события, связанные с расстановкой кораблей
@@ -471,7 +473,6 @@ namespace SeaBattle
 				if (Grid.GetRow(b) == row && Grid.GetColumn(b) == column)
 				{
 					btn = b;
-					break;
 				}
 			}
 			return btn;
@@ -607,6 +608,7 @@ namespace SeaBattle
 
 		private void Attack_Click(object sender, RoutedEventArgs e)
 		{
+			
 			if (mPlayer.Progress == true && mGameEnded != true)
 			{
 				//Находим координаты точки атаки
@@ -616,10 +618,9 @@ namespace SeaBattle
 				//Строка = координата Y
 				plProgress.Row = Grid.GetRow(button);
 
-				SendPacket(PacketInfo.GameInfo);
+				mPlayer.Progress = false;
 
-				Task.Run(()=> { while (true) ReceivePacket(); });
-				CheckPacket();
+				SendPacket(PacketInfo.GameInfo);
 			}
 			else
 			{
@@ -639,7 +640,6 @@ namespace SeaBattle
 			socket.Connect("127.0.0.1", 2048);
 
 			SendPacket(PacketInfo.StartPacket);
-
 			ReceivePacket();
 
 			StatusBox.Text = "Расставьте свои корабли";
@@ -701,25 +701,28 @@ namespace SeaBattle
 			return true;		
 		}
 
-		public void AttackSuccess(int column, int row)
+		public void AttackSuccessHit(int column, int row)
 		{
-			if (opProgress.intMark == (int)MarkType.Hit)
-			{
-				StatusBox.Text = "Попадение!";
-				mOpponentsMap[row, column] = MarkType.Hit;
-			}
-			if (mOpponentsMap[row, column] == MarkType.Kill)
-			{
-				StatusBox.Text = "Корабль потоплен!";
-				mOpponentsMap[row, column] = MarkType.Kill;
-			}
 
+			StatusBoxInteral.Text = "Попадение!";
+			mOpponentsMap[row, column] = MarkType.Hit;
 			Button btn = GetButtonOpponent(row, column);
 			btn.Background = Brushes.Red;
 		}
 
+		public void AttackSuccessKill(int column, int row)
+		{
+			StatusBoxInteral.Text = "Корабль потоплен!";
+			mOpponentsMap[row, column] = MarkType.Kill;
+			Button btn = GetButtonOpponent(row, column);
+			btn.Background = Brushes.Red;
+		}
+
+
 		public void AttackMiss(int row, int column)
 		{
+			StatusBoxInteral.Text = "Мимо!";
+
 			mOpponentsMap[row, column] = MarkType.Miss;
 
 			Button btn = GetButtonOpponent(row, column);
@@ -727,11 +730,17 @@ namespace SeaBattle
 		}
 		public void CheckPacket()
 		{
-			if (plProgress.intMark == (int)MarkType.Hit || plProgress.intMark == (int)MarkType.Kill)
-				AttackSuccess(plProgress.Column, plProgress.Row);
+			if (plProgress.intMark == (int)MarkType.Hit)
+				AttackSuccessHit(plProgress.Column, plProgress.Row);
+
+			if(plProgress.intMark == (int)MarkType.Kill)
+				AttackSuccessKill(plProgress.Column, plProgress.Row);
 
 			if (plProgress.intMark == (int)MarkType.Miss)
 				AttackMiss(plProgress.Row, plProgress.Column);
+
+			SendPacket(PacketInfo.Request);
+			//ReceivePacket();
 		}
 
 		///////////// Функции, связанные с взаимодействием с сервером
@@ -740,17 +749,17 @@ namespace SeaBattle
 			StartPacket,
 			ReadyToPlay,
 			GameInfo,
-			AttackAnswer
+			AttackAnswer,
+			Request
 		}
 
-		
+
 
 		//Получение пакета об результате атаки
 		public void ReceivePacket()
-		{
-			memoryStream.Position = 0;
+		{		
 			socket.Receive(memoryStream.GetBuffer());
-
+			memoryStream.Position = 0;
 			code = binaryReader.ReadInt32();
 
 			switch (code)
@@ -766,6 +775,7 @@ namespace SeaBattle
 						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
 					else
 						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
+
 					break;
 				//Координаты атаки противника
 				case 2:
@@ -775,15 +785,28 @@ namespace SeaBattle
 					break;
 				//Ответ на атаку
 				case 3:
+					attackSuccess = binaryReader.ReadBoolean();
 					plProgress.intMark = binaryReader.ReadInt32();
+					if (attackSuccess == true)
+						mOShips = mOShips - 1;
+					Dispatcher.Invoke(() => CheckPacket());
 					break;
-					//Определение хода
+				//Определение хода
 				case 4:
 					mPlayer.Progress = binaryReader.ReadBoolean();
-					if (mPlayer.Progress==true)
+					if (mPlayer.Progress == true)
 						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
 					else
-						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
+						Dispatcher.Invoke(() =>
+						{
+							StatusBox.Text = "Ход противника";
+							//StatusBoxInteral.Text = "";
+						});
+					break;
+				case 5:
+					mGameEnded = true;
+					string str = binaryReader.ReadString();
+					Dispatcher.Invoke(() => StatusBox.Text = str);
 					break;
 
 				case 10:
@@ -807,14 +830,11 @@ namespace SeaBattle
 				//Пакет, готоворящий о том, что игрок готов к игре
 				case PacketInfo.ReadyToPlay:
 					binaryWriter.Write(1);
-					binaryWriter.Write(mPlayer.ID);
-					//binaryWriter.Write(mPlayer.Status);
 					socket.Send(memoryStream.GetBuffer());
 					break;
 				//Пакет, содержащий координаты выстрела
 				case PacketInfo.GameInfo:
 					binaryWriter.Write(2);
-				//	binaryWriter.Write(mPlayer.ID);
 					binaryWriter.Write(plProgress.Column);
 					binaryWriter.Write(plProgress.Row);
 					socket.Send(memoryStream.GetBuffer());
@@ -823,6 +843,12 @@ namespace SeaBattle
 				case PacketInfo.AttackAnswer:
 					binaryWriter.Write(3);
 					binaryWriter.Write(opProgress.intMark);
+					socket.Send(memoryStream.GetBuffer());
+					break;
+				case PacketInfo.Request:
+					binaryWriter.Write(4);
+					binaryWriter.Write(attackSuccess);
+					binaryWriter.Write(mOShips);
 					socket.Send(memoryStream.GetBuffer());
 					break;
 			}
