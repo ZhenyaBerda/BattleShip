@@ -18,7 +18,7 @@ namespace SeaBattle
 	{
 		//Сокет
 		static Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-		//	static public byte[] buffer = new byte[10000];
+
 		static MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
 		static BinaryReader binaryReader = new BinaryReader(memoryStream);
 		static BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
@@ -74,7 +74,6 @@ namespace SeaBattle
 		{
 			mOShips = 20;
 			mPShips = 0;
-			//StatusBox.Text = "Расставьте корабли";
 
 			//Саздаем массивы свободных ячеек игроков
 			mPlayersMap = new MarkType[10, 10];
@@ -106,7 +105,7 @@ namespace SeaBattle
 		/// <param name="e"></param>
 		private void POnceButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (mPShips == 10)
+			if (mPShips == 20)
 			{
 				return;
 			}
@@ -177,7 +176,7 @@ namespace SeaBattle
 
 						//Уменьшаем количество доступных кораблей
 						mDouble = mDouble - 1;
-						mPShips++;
+						mPShips = mPShips + 2;
 
 						if (mDouble == 0)
 						{
@@ -221,7 +220,7 @@ namespace SeaBattle
 
 						//Уменьшаем количество доступных кораблей
 						mDouble = mDouble - 1;
-						mPShips++;
+						mPShips = mPShips + 2;
 
 						if (mDouble == 0)
 						{
@@ -269,7 +268,7 @@ namespace SeaBattle
 						MarkShipHor(row, column, button, 3);
 						//Уменьшаем количество доступных кораблей
 						mThree = mThree - 1;
-						mPShips++;
+						mPShips = mPShips + 3;
 
 						if (mThree == 0)
 						{
@@ -315,7 +314,7 @@ namespace SeaBattle
 						MarkShipVer(row, column, button, 3);
 						//Уменьшаем количество доступных кораблей
 						mThree = mThree - 1;
-						mPShips++;
+						mPShips= mPShips+3;
 
 						if (mThree == 0)
 						{
@@ -369,7 +368,7 @@ namespace SeaBattle
 						MarkShipHor(row, column, button, 4);
 						//Уменьшаем количество доступных кораблей
 						mFour = mFour - 1;
-						mPShips++;
+						mPShips= mPShips+4;
 
 						if (mFour == 0)
 						{
@@ -422,7 +421,7 @@ namespace SeaBattle
 						MarkShipVer(row, column, button, 4);
 						//Уменьшаем количество доступных кораблей
 						mFour = mFour - 1;
-						mPShips++;
+						mPShips = mPShips + 4;
 
 						if (mFour == 0)
 						{
@@ -506,7 +505,6 @@ namespace SeaBattle
 				btn = GetButtonPlayer(row, i);
 				btn.Background = Brushes.MediumSeaGreen;
 			}
-
 		}
 
 		/// <summary>
@@ -540,12 +538,14 @@ namespace SeaBattle
 				return true;
 		}
 
-		//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		//Игровой процесс
-
+/// <summary>
+/// Начало игры
+/// </summary>
+/// <param name="sender"></param>
+/// <param name="e"></param>
 		private void StartGame_Click(object sender, RoutedEventArgs e)
 		{
-			if (mPShips == 10)
+			if (mPShips == 20)
 			{
 				SendPacket(PacketInfo.ReadyToPlay);
 
@@ -589,14 +589,21 @@ namespace SeaBattle
 			if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Ship)
 			{
 				if (CheckKilled(opProgress.Row, opProgress.Column) == true)
+				{
 					opProgress.intMark = (int)MarkType.Kill;
+					mPlayersMap[opProgress.Row, opProgress.Column] = MarkType.Kill;
+				}
 				else
+				{
 					opProgress.intMark = (int)MarkType.Hit;
+					mPlayersMap[opProgress.Row, opProgress.Column] = MarkType.Hit;
+				}
 				Button btn = GetButtonPlayer(opProgress.Row, opProgress.Column);
 				btn.Background = Brushes.Red;
 			}
+			else
 			
-			if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Free || mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Indenting)
+		//	if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Free || mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Indenting)
 			{
 				opProgress.intMark = (int)MarkType.Miss;
 				Button btn = GetButtonPlayer(opProgress.Row, opProgress.Column);
@@ -608,7 +615,6 @@ namespace SeaBattle
 
 		private void Attack_Click(object sender, RoutedEventArgs e)
 		{
-			
 			if (mPlayer.Progress == true && mGameEnded != true)
 			{
 				//Находим координаты точки атаки
@@ -618,7 +624,7 @@ namespace SeaBattle
 				//Строка = координата Y
 				plProgress.Row = Grid.GetRow(button);
 
-				mPlayer.Progress = false;
+				//mPlayer.Progress = false;
 
 				SendPacket(PacketInfo.GameInfo);
 			}
@@ -635,18 +641,26 @@ namespace SeaBattle
 			//Записываем логин
 			mPlayer.Name = LoginBox.Text;
 			LoginBox.IsEnabled = false;
+			try
+			{
 
-			//Подключаемся к серверу
-			socket.Connect("127.0.0.1", 2048);
+				//Подключаемся к серверу
+				socket.Connect("127.0.0.1", 2048);
 
-			SendPacket(PacketInfo.StartPacket);
-			ReceivePacket();
+				SendPacket(PacketInfo.StartPacket);
+				ReceivePacket();
 
-			StatusBox.Text = "Расставьте свои корабли";
-			StartGame.IsEnabled = true;
-			ConnectionButton.IsEnabled = false;
-			PlayersMap();
-			NewGame();
+				StatusBox.Text = "Расставьте свои корабли";
+				StartGame.IsEnabled = true;
+				ConnectionButton.IsEnabled = false;
+				PlayersMap();
+				NewGame();
+			}
+			catch
+			{
+				MessageBox.Show("Не удалось подключиться");
+				this.Close();
+			}
 		}
 
 		/// <summary>
@@ -664,6 +678,8 @@ namespace SeaBattle
 		{
 			int i = 1;
 
+			bool ver;
+
 			//вертикальный корабль
 			//идем вверх
 			while (CheckCell(row + i, column) == true && mPlayersMap[row + i, column] != MarkType.Indenting)
@@ -678,9 +694,8 @@ namespace SeaBattle
 			while (CheckCell(row - i, column) == true && mPlayersMap[row - i, column] != MarkType.Indenting)
 			{
 				if (mPlayersMap[row - i, column] == MarkType.Ship) return false;
-				i = i - 1;
+				i = i + 1;
 			}
-
 			//горизонтальный корабль
 			//идем вправо
 			i = 1;
@@ -696,8 +711,9 @@ namespace SeaBattle
 			while (CheckCell(row, column - i) == true && mPlayersMap[row, column - i] != MarkType.Indenting)
 			{
 				if (mPlayersMap[row, column - 1] == MarkType.Ship) return false;
-				i = i - 1;
+				i = i + 1;
 			}
+
 			return true;		
 		}
 
@@ -722,12 +738,12 @@ namespace SeaBattle
 		public void AttackMiss(int row, int column)
 		{
 			StatusBoxInteral.Text = "Мимо!";
-
 			mOpponentsMap[row, column] = MarkType.Miss;
 
 			Button btn = GetButtonOpponent(row, column);
 			btn.Background = Brushes.Gray;
 		}
+
 		public void CheckPacket()
 		{
 			if (plProgress.intMark == (int)MarkType.Hit)
@@ -740,7 +756,6 @@ namespace SeaBattle
 				AttackMiss(plProgress.Row, plProgress.Column);
 
 			SendPacket(PacketInfo.Request);
-			//ReceivePacket();
 		}
 
 		///////////// Функции, связанные с взаимодействием с сервером
@@ -750,16 +765,17 @@ namespace SeaBattle
 			ReadyToPlay,
 			GameInfo,
 			AttackAnswer,
-			Request
+			Request,
+			PacketNew
 		}
-
-
 
 		//Получение пакета об результате атаки
 		public void ReceivePacket()
-		{		
+		{
+			
 			socket.Receive(memoryStream.GetBuffer());
 			memoryStream.Position = 0;
+
 			code = binaryReader.ReadInt32();
 
 			switch (code)
@@ -797,11 +813,7 @@ namespace SeaBattle
 					if (mPlayer.Progress == true)
 						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
 					else
-						Dispatcher.Invoke(() =>
-						{
-							StatusBox.Text = "Ход противника";
-							//StatusBoxInteral.Text = "";
-						});
+						Dispatcher.Invoke(() =>	StatusBox.Text = "Ход противника");
 					break;
 				case 5:
 					mGameEnded = true;
@@ -850,6 +862,9 @@ namespace SeaBattle
 					binaryWriter.Write(attackSuccess);
 					binaryWriter.Write(mOShips);
 					socket.Send(memoryStream.GetBuffer());
+					break;
+				case PacketInfo.PacketNew:
+					binaryWriter.Write(5);
 					break;
 			}
 		}
