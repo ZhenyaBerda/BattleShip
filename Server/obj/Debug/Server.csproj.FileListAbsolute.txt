@@ -1,0 +1,7 @@
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\bin\Debug\Server.exe.config
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\bin\Debug\Server.exe
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\bin\Debug\Server.pdb
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\obj\Debug\Server.csproj.CoreCompileInputs.cache
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\obj\Debug\Server.exe
+C:\Users\Евгения\Documents\important\Сети ЭВМ\Курсовая работа\Sea battle\SeaBattle\Server\obj\Debug\Server.pdb

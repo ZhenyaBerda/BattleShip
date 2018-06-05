@@ -10,14 +10,12 @@ namespace SeaBattle
 	class Player
 	{
 		public string Name { get; set; }
+		public string IPAdress { get; set; }
 		public int ID { get; set; }
 		public bool Progress { get; set; }
 
-		public Player(string name, bool progress)
-		{
-			Name = name;
-			Progress = progress;
-		}
+		public Player()
+		{}
 	}
 
 	class PlProgress

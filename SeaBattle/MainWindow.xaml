@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SeaBattle"
         mc:Ignorable="d"
-        Title="Морской бой" Height="700" Width="1000">
+        Title="Морской бой" Height="750" Width="1000">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -285,7 +285,7 @@
             <Button x:Name="O9_8"  Grid.Column="9" Grid.Row="8" Background="LightSkyBlue" Click="Attack_Click"></Button>
             <Button x:Name="O9_9"  Grid.Column="9" Grid.Row="9" Background="LightSkyBlue" Click="Attack_Click"></Button>
         </Grid>
-        <Button x:Name="StartGame" Content="Начать игру" HorizontalAlignment="Left" Margin="252,601,0,0" VerticalAlignment="Top" Width="188" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="StartGame_Click"/>
+        <Button x:Name="StartGame" Content="Начать игру" HorizontalAlignment="Left" Margin="252,648,0,0" VerticalAlignment="Top" Width="188" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="StartGame_Click"/>
         <Label Content="Статус игры:" HorizontalAlignment="Left" Margin="560,458,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.643,-0.145" Height="35" Width="121" FontSize="18" FontFamily="Nirmala UI"/>
         <TextBox x:Name="StatusBox" HorizontalAlignment="Left" Height="69" Margin="681,462,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
         <Label Content="Корабли:" HorizontalAlignment="Left" Margin="58,459,0,0" VerticalAlignment="Top" FontSize="18"/>
@@ -299,10 +299,11 @@
             <RadioButton x:Name="Horizontally" Content="Горизонтально" GroupName="Orientation" FontSize="16"/>
             <RadioButton x:Name="Vertically" Content="Вертикально" FontSize="16" GroupName="Orientation"/>
         </StackPanel>
-        <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="40" Margin="536,606,0,0" TextWrapping="Wrap" Text="Логин" VerticalAlignment="Top" Width="214" FontSize="20"/>
-        <Button x:Name="ConnectionButton" Content="Подключиться" HorizontalAlignment="Left" Margin="814,606,0,0" VerticalAlignment="Top" Width="146" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="ConnectionButton_Click"/>
+        <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="40" Margin="560,648,0,0" TextWrapping="Wrap" Text="Имя" VerticalAlignment="Top" Width="214" FontSize="20"/>
+        <Button x:Name="ConnectionButton" Content="Подключиться" HorizontalAlignment="Left" Margin="814,648,0,0" VerticalAlignment="Top" Width="146" Height="40" Background="White" BorderBrush="Black" FontSize="18" Click="ConnectionButton_Click"/>
         <TextBox x:Name="StatusBoxInteral" HorizontalAlignment="Left" Height="58" Margin="681,536,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="279" FontSize="18" FontFamily="Nirmala UI" BorderBrush="White" Foreground="#FF656363"/>
         <Label Content="Аттака:" HorizontalAlignment="Left" Margin="560,536,0,0" VerticalAlignment="Top" FontSize="18" FontFamily="Nirmala UI"/>
+        <TextBox x:Name="IPBox" HorizontalAlignment="Left" Height="42" Margin="560,599,0,0" TextWrapping="Wrap" Text="Введите IP-адрес" VerticalAlignment="Top" Width="400" FontSize="20"/>
 
 
     </Grid>

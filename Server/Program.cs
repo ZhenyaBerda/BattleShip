@@ -2,22 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Server
 {
 	class Program
 	{
 		static int count = 0;
-		static int k = 0;
-		//bool attackSuccsess = false;
+		static int l = 0, k = 0;
 
 		class Client
 		{
 			public Socket Socket { get; set; }
 			public int Index { get; set; }
 			public string Name { get; set; }
+			public string IPAdress { get; set; }
+			public Thread MainThread;
+			//public Thread CheckThread;*/
 
 			public Client(Socket socket)
 			{
@@ -26,7 +30,7 @@ namespace Server
 		}
 
 		static Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-
+		static string ip = "192.168.0.102";
 		static List<Client> clients = new List<Client>();
 
 
@@ -36,30 +40,94 @@ namespace Server
 
 			Console.WriteLine("Сервер запущен. Ожидание подключений");
 
-			socket.Bind(new IPEndPoint(IPAddress.Any, 2048));
+			socket.Bind(new IPEndPoint(IPAddress.Parse(ip), 2048));
+			Console.WriteLine($"IP-адрес сервера: {ip}");
 			socket.Listen(0);
 			socket.BeginAccept(AcceptCallback, null);
 
 			Console.ReadLine();
 		}
-
+		/// <summary>
+		/// Функция подключения клиентов
+		/// </summary>
+		/// <param name="ar"></param>
 		static void AcceptCallback(IAsyncResult ar)
 		{
+			if (count != 2)
+			{
+				Client client = new Client(socket.EndAccept(ar));
+				count++;
+				client.Index = count;
+				client.MainThread = new Thread(HandleClint);
+				client.MainThread.Start(client);
+				clients.Add(client);
 
-			Client client = new Client(socket.EndAccept(ar));
-			count++;
-			client.Index = count;
-			Thread thread = new Thread(HandleClint);
-			thread.Start(client);
-			clients.Add(client);
+				socket.BeginAccept(AcceptCallback, null);
+			}
+			else
+			{
+				MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
+				BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
 
-			Console.Write("Новое подключение: ");
-
-			socket.BeginAccept(AcceptCallback, null);
-
-
+				Client client = new Client(socket.EndAccept(ar));
+				memoryStream.Position = 0;
+				binaryWriter.Write(404);
+				client.Socket.Send(memoryStream.GetBuffer());
+			}
 		}
 
+		public static void ChangeIndex()
+		{
+			MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
+			BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
+			if (count != 0)
+			{
+				foreach (var c in clients)
+				{
+					c.Index = 1;
+					memoryStream.Position = 0;
+					binaryWriter.Write(0);
+					c.Socket.Send(memoryStream.GetBuffer());
+				}
+			}
+			l = count;
+		}
+		/// <summary>
+		/// Проверка, находится ли клиент в сети
+		/// </summary>
+		/// <param name="obj"></param>
+		private static void CheckClient(object obj)
+		{
+			Client client = (Client)obj;
+			Ping ping = new Ping();
+			int i = 0;
+
+			while (i < 3)
+			{
+				//Пингуем клиента и получаем ответ
+				PingReply pingReply = ping.Send(client.IPAdress);
+				//Если клиент откликнулся, то начинаем цикл while сначала
+				if (pingReply.Status == IPStatus.Success)
+				{
+					i = -1;
+					Thread.Sleep(500);
+				}
+				i++;
+			}
+			//Если не откликнулся, удаляем клиента, а другому пользователю отправляем пакет с кодом 0
+			Console.WriteLine($"Пользователь {client.Name} ({client.IPAdress}) не отвечает");
+			clients.Remove(client);
+			count--;
+			ChangeIndex();
+			//	Thread.Abort();
+			client.Socket.Shutdown(SocketShutdown.Both);
+			client.Socket.Disconnect(true);
+		}
+
+		/// <summary>
+		/// Функция, которая постоянно прослушивает поток клиента
+		/// </summary>
+		/// <param name="obj"></param>
 		private static void HandleClint(object obj)
 		{
 			Client client = (Client)obj;
@@ -70,42 +138,70 @@ namespace Server
 			while (true)
 			{
 				memoryStream.Position = 0;
-
 				try
 				{
 					client.Socket.Receive(memoryStream.GetBuffer());
 				}
-				catch
+				catch(Exception)
 				{
-					client.Socket.Shutdown(SocketShutdown.Both);
-					client.Socket.Disconnect(true);
-					clients.Remove(client);
-					Console.WriteLine($"Пользователь {client.Name} отключился");
+					foreach (var c in clients)
+					{
+						if (c==client)
+						{
+							clients.Remove(c);
+							Console.WriteLine($"Пользователь {c.Name} отключился");
+							count--;
+							ChangeIndex();
+							c.Socket.Shutdown(SocketShutdown.Both);
+							c.Socket.Disconnect(true);
+							return;
+						}
+					}
 					return;
 				}
 
 				int code = binaryReader.ReadInt32();
+
 				int mark;
 				int column, row, ships;
-				bool attackSuccess=false;
+				bool attackSuccess = false;
 
 				switch (code)
 				{
-					//Пакет, содержащий имя игрока
+					//Пакет, содержащий имя и адрес игрока
 					case 0:
-						while (true)
+						k = 0;
+						l = l + 1;
+						client.Name = binaryReader.ReadString();
+						client.IPAdress = binaryReader.ReadString();
+						Console.WriteLine($"{client.Name} ({client.IPAdress}) в игре");
+						/*client.CheckThreadd = new Thread(CheckClient);
+						checkThread.Start(client);*/
+
+						Task.Run(() =>
 						{
-							client.Name = binaryReader.ReadString();
-							Console.WriteLine($"{client.Name} в игре");
+							CheckClient(client);
+							client.MainThread.Abort();
+							return; 
+						});
 
+						if (l != 2)
+						{
 							memoryStream.Position = 0;
-							binaryWriter.Write(10);
-							binaryWriter.Write(client.Index);
+							binaryWriter.Write(0);
 							client.Socket.Send(memoryStream.GetBuffer());
-
 							break;
 						}
-						break;
+						else
+						{
+							foreach (var c in clients)
+							{
+								memoryStream.Position = 0;
+								binaryWriter.Write(1);
+								c.Socket.Send(memoryStream.GetBuffer());
+							}
+							break;
+						}
 					//Содержит готовность игроков к игре
 					case 1:
 						Console.WriteLine($"{client.Name} расставил корабли и готов к игре");
@@ -114,7 +210,7 @@ namespace Server
 						if (k != 2)
 						{
 							memoryStream.Position = 0;
-							binaryWriter.Write(0);
+							binaryWriter.Write(2);
 							client.Socket.Send(memoryStream.GetBuffer());
 							break;
 						}
@@ -127,7 +223,7 @@ namespace Server
 
 								if (c.Index == 1)
 								{
-									binaryWriter.Write(1);
+									binaryWriter.Write(3);
 									binaryWriter.Write(true);
 									c.Socket.Send(memoryStream.GetBuffer());
 
@@ -135,7 +231,7 @@ namespace Server
 								}
 								else
 								{
-									binaryWriter.Write(1);
+									binaryWriter.Write(3);
 									binaryWriter.Write(false);
 									c.Socket.Send(memoryStream.GetBuffer());
 								}
@@ -155,7 +251,7 @@ namespace Server
 							if (c != client)
 							{
 								memoryStream.Position = 0;
-								binaryWriter.Write(2);
+								binaryWriter.Write(4);
 								binaryWriter.Write(column);
 								binaryWriter.Write(row);
 								c.Socket.Send(memoryStream.GetBuffer());
@@ -171,7 +267,7 @@ namespace Server
 							Console.WriteLine("успешно!");
 							attackSuccess = true;
 						}
-						if (mark==6)
+						if (mark == 6)
 						{
 							Console.WriteLine("мимо!");
 							attackSuccess = false;
@@ -182,7 +278,7 @@ namespace Server
 							if (c != client)
 							{
 								memoryStream.Position = 0;
-								binaryWriter.Write(3);
+								binaryWriter.Write(5);
 								binaryWriter.Write(attackSuccess);
 								binaryWriter.Write(mark);
 								c.Socket.Send(memoryStream.GetBuffer());
@@ -190,33 +286,35 @@ namespace Server
 						}
 						break;
 
+					//Пакет, определяющий ход игроков
 					case 4:
-
 						attackSuccess = binaryReader.ReadBoolean();
 						ships = binaryReader.ReadInt32();
-						//	Console.WriteLine(ships);
 
 						if (ships == 0)
 						{
+							Console.WriteLine("Окончание игры!");
+
 							foreach (var c in clients)
 							{
 
 								if (c == client)
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(5);
-									binaryWriter.Write("Победа!");
+									binaryWriter.Write(7);
+									binaryWriter.Write(true);
 									c.Socket.Send(memoryStream.GetBuffer());
+									Console.WriteLine($"Победитель {c.Name}");
 								}
 								else
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(5);
-									binaryWriter.Write("Вы проиграли :с");
+									binaryWriter.Write(7);
+									binaryWriter.Write(false);
 									c.Socket.Send(memoryStream.GetBuffer());
 								}
-
 							}
+							break;
 						}
 						if (attackSuccess == true)
 						{
@@ -225,7 +323,7 @@ namespace Server
 								if (c == client)
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(4);
+									binaryWriter.Write(6);
 									binaryWriter.Write(true);
 									c.Socket.Send(memoryStream.GetBuffer());
 									Console.WriteLine($"{c.Name}: атака");
@@ -233,7 +331,7 @@ namespace Server
 								else
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(4);
+									binaryWriter.Write(6);
 									binaryWriter.Write(false);
 									c.Socket.Send(memoryStream.GetBuffer());
 								}
@@ -246,14 +344,14 @@ namespace Server
 								if (c == client)
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(4);
+									binaryWriter.Write(6);
 									binaryWriter.Write(false);
 									c.Socket.Send(memoryStream.GetBuffer());
 								}
 								else
 								{
 									memoryStream.Position = 0;
-									binaryWriter.Write(4);
+									binaryWriter.Write(6);
 									binaryWriter.Write(true);
 									c.Socket.Send(memoryStream.GetBuffer());
 									Console.WriteLine($"{c.Name}: атака");
@@ -261,20 +359,7 @@ namespace Server
 							}
 						}
 						break;
-
-					case 5:
-						foreach (var c in clients)
-						{
-							if (c != client)
-							{
-								memoryStream.Position = 0;
-								binaryWriter.Write(6);
-								c.Socket.Send(memoryStream.GetBuffer());
-							}
-						}
-						break;
 				}
-				
 			}
 		}
 	}

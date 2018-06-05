@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,15 +23,18 @@ namespace SeaBattle
 		static MemoryStream memoryStream = new MemoryStream(new byte[10000], 0, 10000, true, true);
 		static BinaryReader binaryReader = new BinaryReader(memoryStream);
 		static BinaryWriter binaryWriter = new BinaryWriter(memoryStream);
+
+		//static Thread thread;
 		static bool attackSuccess;
 		static int code;
 		/// ///////////
 		/// 
-		static Player mPlayer = new Player(null, false);
+		static Player mPlayer = new Player();
 		static PlProgress plProgress = new PlProgress(0, 0, 0);
 		static PlProgress opProgress = new PlProgress(0, 0, 0);
 
-		//static Player mOpponent = new Player(null, false, null, 0, 0);
+		Ping ping = new Ping();
+		PingReply pReply;
 
 		//Поле игрока
 		public Button[,] playersBoxes = new Button[10, 10];
@@ -38,9 +42,11 @@ namespace SeaBattle
 		//Поле противника
 		public Button[,] oppBoxes = new Button[10, 10];
 		private MarkType[,] mOpponentsMap;
-		//
 
+		//IP-адрес сервера
+		static string ServerIP = "192.168.0.102";
 
+		//Контроль расстановки кораблей
 		private int mSingle = 4, mDouble = 3, mThree = 2, mFour = 1;
 		//Количество кораблей
 		private int mPShips;
@@ -56,15 +62,8 @@ namespace SeaBattle
 			StatusBox.IsEnabled = false;
 			StatusBoxInteral.IsEnabled = false;
 			StatusBox.Text = "Введите имя пользователя и подключитесь к серверу";
-			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
-			{
-				button.IsEnabled = false;
-			});
-
-			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
-			{
-				button.IsEnabled = false;
-			});
+			PlayersMap(false);
+			OpponentsMap(false);
 		}
 
 		/// <summary>
@@ -77,7 +76,6 @@ namespace SeaBattle
 
 			//Саздаем массивы свободных ячеек игроков
 			mPlayersMap = new MarkType[10, 10];
-
 			mOpponentsMap = new MarkType[10, 10];
 
 			for (int y = 0; y < 10; y++)
@@ -130,9 +128,8 @@ namespace SeaBattle
 					//Устанавливаем корабль
 					MarkInd(row, column, 1, 1);
 					mPlayersMap[row, column] = MarkType.Ship;
-					//Изменяем цвета кнопок и их доступность (?)
+					//Изменяем цвета кнопок
 					button.Background = Brushes.MediumSeaGreen;
-					//	mPlayersButton[row, column].Background = Brushes.MediumSeaGreen;
 
 					//Уменьшаем количество доступных кораблей
 					mSingle = mSingle - 1;
@@ -314,7 +311,7 @@ namespace SeaBattle
 						MarkShipVer(row, column, button, 3);
 						//Уменьшаем количество доступных кораблей
 						mThree = mThree - 1;
-						mPShips= mPShips+3;
+						mPShips = mPShips + 3;
 
 						if (mThree == 0)
 						{
@@ -368,7 +365,7 @@ namespace SeaBattle
 						MarkShipHor(row, column, button, 4);
 						//Уменьшаем количество доступных кораблей
 						mFour = mFour - 1;
-						mPShips= mPShips+4;
+						mPShips = mPShips + 4;
 
 						if (mFour == 0)
 						{
@@ -538,52 +535,52 @@ namespace SeaBattle
 				return true;
 		}
 
-/// <summary>
-/// Начало игры
-/// </summary>
-/// <param name="sender"></param>
-/// <param name="e"></param>
+		/// <summary>
+		/// Начало игры
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void StartGame_Click(object sender, RoutedEventArgs e)
 		{
 			if (mPShips == 20)
 			{
 				SendPacket(PacketInfo.ReadyToPlay);
 
-				OpponentsMap();
+				OpponentsMap(true);
 
 				StartGame.IsEnabled = false;
-
-				Task.Run(() =>
-				{
-					while (true)
-					{
-						ReceivePacket();
-						Task.Delay(1000);
-					}
-				});
 			}
 			else
 				MessageBox.Show("Расставьте свои корабли!");
 		}
 
-		public void OpponentsMap()
+		/// <summary>
+		/// Инициализирует или блокирует поле противника
+		/// </summary>
+		/// <param name="b"></param>
+		public void OpponentsMap(bool b)
 		{
 			MapOpponent.Children.Cast<Button>().ToList().ForEach(button =>
 			{
 				button.Background = Brushes.LightSkyBlue;
-				button.IsEnabled = true;
+				button.IsEnabled = b;
 			});
 		}
-
-		public void PlayersMap()
+		/// <summary>
+		/// Инициализирует или блокирует поле игрока
+		/// </summary>
+		/// <param name="b"></param>
+		public void PlayersMap(bool b)
 		{
 			MapPlayer.Children.Cast<Button>().ToList().ForEach(button =>
 			{
 				button.Background = Brushes.LightSkyBlue;
-				button.IsEnabled = true;
+				button.IsEnabled = b;
 			});
 		}
-
+		/// <summary>
+		/// Проверка атаки противника
+		/// </summary>
 		public void OpponentAttack()
 		{
 			if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Ship)
@@ -602,8 +599,6 @@ namespace SeaBattle
 				btn.Background = Brushes.Red;
 			}
 			else
-			
-		//	if (mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Free || mPlayersMap[opProgress.Row, opProgress.Column] == MarkType.Indenting)
 			{
 				opProgress.intMark = (int)MarkType.Miss;
 				Button btn = GetButtonPlayer(opProgress.Row, opProgress.Column);
@@ -612,7 +607,11 @@ namespace SeaBattle
 
 			SendPacket(PacketInfo.AttackAnswer);
 		}
-
+		/// <summary>
+		/// Функция атаки игрока
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void Attack_Click(object sender, RoutedEventArgs e)
 		{
 			if (mPlayer.Progress == true && mGameEnded != true)
@@ -625,7 +624,6 @@ namespace SeaBattle
 				plProgress.Row = Grid.GetRow(button);
 
 				//mPlayer.Progress = false;
-
 				SendPacket(PacketInfo.GameInfo);
 			}
 			else
@@ -636,30 +634,77 @@ namespace SeaBattle
 
 		}
 
+		/// <summary>
+		/// Проверка подключения компьютера к сети
+		/// </summary>
+		/// <returns></returns>
+		public void CheckPing(string ip)
+		{
+			int i = 0;
+			while (i < 3)
+			{
+				pReply = ping.Send(ip);
+				if (pReply.Status == IPStatus.Success)
+				{
+					i = -1;
+					Thread.Sleep(500);
+				}
+				i++;
+			}
+
+			MessageBox.Show("Сервер не доступен");
+			socket.Shutdown(SocketShutdown.Both);
+			socket.Disconnect(true);
+		}
+
+		/// <summary>
+		/// Функция начала расстановки кораблей и начала игры
+		/// </summary>
+		public void SendShips()
+		{
+			StartGame.IsEnabled = true;
+
+			PlayersMap(true);
+			NewGame();
+		}
+
+		/// <summary>
+		/// Подключение к серверу
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void ConnectionButton_Click(object sender, RoutedEventArgs e)
 		{
 			//Записываем логин
 			mPlayer.Name = LoginBox.Text;
-			LoginBox.IsEnabled = false;
+			mPlayer.IPAdress = IPBox.Text;
+
 			try
 			{
-
 				//Подключаемся к серверу
-				socket.Connect("127.0.0.1", 2048);
+				socket.Connect(ServerIP, 2048);
 
-				SendPacket(PacketInfo.StartPacket);
-				ReceivePacket();
+				Task.Run(() =>
+				{
+					CheckPing(ServerIP);
+					return;
+				});
 
-				StatusBox.Text = "Расставьте свои корабли";
-				StartGame.IsEnabled = true;
 				ConnectionButton.IsEnabled = false;
-				PlayersMap();
-				NewGame();
+				LoginBox.IsEnabled = false;
+				IPBox.IsEnabled = false;
+				SendPacket(PacketInfo.StartPacket);
+
+				//Постоянно прослушиваем поток, связанный с сервером
+				Task.Run(() =>
+				{
+					while (true)
+						ReceivePacket();
+				});
 			}
 			catch
 			{
 				MessageBox.Show("Не удалось подключиться");
-				this.Close();
 			}
 		}
 
@@ -669,16 +714,9 @@ namespace SeaBattle
 		/// <param name="row"></param>
 		/// <param name="column"></param>
 		/// <returns></returns>
-
-		//мне не нравится эта функция, но она работает
-		//пусть будет
-
-		//сбивается, если бить через клетку в один и тот же корабль
 		private bool CheckKilled(int row, int column)
 		{
 			int i = 1;
-
-			bool ver;
 
 			//вертикальный корабль
 			//идем вверх
@@ -687,7 +725,7 @@ namespace SeaBattle
 				if (mPlayersMap[row + i, column] == MarkType.Ship) return false;
 				i = i + 1;
 			}
-		
+
 			//вертикальный корабль
 			//идем вниз
 			i = 1;
@@ -714,12 +752,12 @@ namespace SeaBattle
 				i = i + 1;
 			}
 
-			return true;		
+			return true;
 		}
+
 
 		public void AttackSuccessHit(int column, int row)
 		{
-
 			StatusBoxInteral.Text = "Попадение!";
 			mOpponentsMap[row, column] = MarkType.Hit;
 			Button btn = GetButtonOpponent(row, column);
@@ -743,13 +781,15 @@ namespace SeaBattle
 			Button btn = GetButtonOpponent(row, column);
 			btn.Background = Brushes.Gray;
 		}
-
+		/// <summary>
+		/// Проверяем ответ об атаке
+		/// </summary>
 		public void CheckPacket()
 		{
 			if (plProgress.intMark == (int)MarkType.Hit)
 				AttackSuccessHit(plProgress.Column, plProgress.Row);
 
-			if(plProgress.intMark == (int)MarkType.Kill)
+			if (plProgress.intMark == (int)MarkType.Kill)
 				AttackSuccessKill(plProgress.Column, plProgress.Row);
 
 			if (plProgress.intMark == (int)MarkType.Miss)
@@ -758,7 +798,9 @@ namespace SeaBattle
 			SendPacket(PacketInfo.Request);
 		}
 
-		///////////// Функции, связанные с взаимодействием с сервером
+		/// <summary>
+		/// Перечисление, определяющий пакет, отправляемый серверу
+		/// </summary>
 		public enum PacketInfo
 		{
 			StartPacket,
@@ -769,38 +811,81 @@ namespace SeaBattle
 			PacketNew
 		}
 
-		//Получение пакета об результате атаки
+		/// <summary>
+		/// Получение пакета от сервера
+		/// </summary>
 		public void ReceivePacket()
 		{
-			
-			socket.Receive(memoryStream.GetBuffer());
-			memoryStream.Position = 0;
+			try
+			{
+				socket.Receive(memoryStream.GetBuffer());
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Соединение разорвано");
+				socket.Shutdown(SocketShutdown.Both);
+				Dispatcher.Invoke(() =>
+				{
+					this.Close();
+				});
+				return;
+			}
 
+			memoryStream.Position = 0;
 			code = binaryReader.ReadInt32();
 
 			switch (code)
 			{
-				case 0:
-					mGameEnded = true;
-					Dispatcher.Invoke(() => StatusBox.Text = "Противник не поставил корабли");
+				//Пакет отказа в доступе
+				case 404:
+					Dispatcher.Invoke(() =>
+					{
+						MessageBox.Show("Отказано в доступе");
+						this.Close();
+					});
 					break;
+				//Сервер принял наш пакет, ожидание противника
+				case 0:
+					Dispatcher.Invoke(() =>
+					{
+						OpponentsMap(false);
+						PlayersMap(false);
+						StatusBox.Text = "Ожидание противника";
+					});
+					break;
+				//Противник найден, можно начать расстановку кораблей
 				case 1:
+					Dispatcher.Invoke(() =>
+					{
+						SendShips();
+						StatusBox.Text = "Противник найден. Расставьте свои корабли";
+					});
+					break;
+				//Противник не закончил расстановку кораблей, ожидание
+				case 2:
+					Dispatcher.Invoke(() =>
+					{
+						StatusBox.Text = "Противник не готов к игре";
+					});
+					break;
+				//Начало игры, определение первого хода
+				case 3:
 					mGameEnded = false;
 					mPlayer.Progress = binaryReader.ReadBoolean();
 					if (mPlayer.Progress == true)
 						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
 					else
 						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
-
 					break;
+
 				//Координаты атаки противника
-				case 2:
+				case 4:
 					opProgress.Column = binaryReader.ReadInt32();
 					opProgress.Row = binaryReader.ReadInt32();
 					Dispatcher.Invoke(() => OpponentAttack());
 					break;
 				//Ответ на атаку
-				case 3:
+				case 5:
 					attackSuccess = binaryReader.ReadBoolean();
 					plProgress.intMark = binaryReader.ReadInt32();
 					if (attackSuccess == true)
@@ -808,23 +893,25 @@ namespace SeaBattle
 					Dispatcher.Invoke(() => CheckPacket());
 					break;
 				//Определение хода
-				case 4:
+				case 6:
 					mPlayer.Progress = binaryReader.ReadBoolean();
 					if (mPlayer.Progress == true)
 						Dispatcher.Invoke(() => StatusBox.Text = "Ваш ход!");
 					else
-						Dispatcher.Invoke(() =>	StatusBox.Text = "Ход противника");
+						Dispatcher.Invoke(() => StatusBox.Text = "Ход противника");
 					break;
-				case 5:
+				//Конец игры
+				case 7:
 					mGameEnded = true;
-					string str = binaryReader.ReadString();
-					Dispatcher.Invoke(() => StatusBox.Text = str);
+					bool winner = binaryReader.ReadBoolean();
+					if (winner)
+						Dispatcher.Invoke(() => StatusBox.Text = "Вы победили!");
+					else
+						Dispatcher.Invoke(() => StatusBox.Text = "Вы проиграли!");
 					break;
 
-				case 10:
-					mPlayer.ID = binaryReader.ReadInt32();
-					break;
 			}
+
 		}
 
 		public void SendPacket(PacketInfo info)
@@ -834,9 +921,10 @@ namespace SeaBattle
 			switch (info)
 			{
 				//Стартовый пакет, содержащий имя пользователя
-				case PacketInfo.StartPacket: 
+				case PacketInfo.StartPacket:
 					binaryWriter.Write(0);
 					binaryWriter.Write(mPlayer.Name);
+					binaryWriter.Write(mPlayer.IPAdress);
 					socket.Send(memoryStream.GetBuffer());
 					break;
 				//Пакет, готоворящий о том, что игрок готов к игре
@@ -857,14 +945,12 @@ namespace SeaBattle
 					binaryWriter.Write(opProgress.intMark);
 					socket.Send(memoryStream.GetBuffer());
 					break;
+				//Запрос на определение хода
 				case PacketInfo.Request:
 					binaryWriter.Write(4);
 					binaryWriter.Write(attackSuccess);
 					binaryWriter.Write(mOShips);
 					socket.Send(memoryStream.GetBuffer());
-					break;
-				case PacketInfo.PacketNew:
-					binaryWriter.Write(5);
 					break;
 			}
 		}
