@@ -11,11 +11,8 @@ namespace SeaBattle
 	{
 		public string Name { get; set; }
 		public string IPAdress { get; set; }
-		public int ID { get; set; }
+	//	public int ID { get; set; }
 		public bool Progress { get; set; }
-
-		public Player()
-		{}
 	}
 
 	class PlProgress
