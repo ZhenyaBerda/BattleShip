@@ -21,7 +21,6 @@ namespace Server
 			public string Name { get; set; }
 			public string IPAdress { get; set; }
 			public Thread MainThread;
-			//public Thread CheckThread;*/
 
 			public Client(Socket socket)
 			{
@@ -30,7 +29,7 @@ namespace Server
 		}
 
 		static Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-		static string ip = "192.168.0.102";
+		static string ip = "172.20.10.2";
 		static List<Client> clients = new List<Client>();
 
 
@@ -119,7 +118,6 @@ namespace Server
 			clients.Remove(client);
 			count--;
 			ChangeIndex();
-			//	Thread.Abort();
 			client.Socket.Shutdown(SocketShutdown.Both);
 			client.Socket.Disconnect(true);
 		}

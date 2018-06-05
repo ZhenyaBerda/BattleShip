@@ -33,9 +33,6 @@ namespace SeaBattle
 		static PlProgress plProgress = new PlProgress(0, 0, 0);
 		static PlProgress opProgress = new PlProgress(0, 0, 0);
 
-		Ping ping = new Ping();
-		PingReply pReply;
-
 		//Поле игрока
 		public Button[,] playersBoxes = new Button[10, 10];
 		private MarkType[,] mPlayersMap;
@@ -44,7 +41,7 @@ namespace SeaBattle
 		private MarkType[,] mOpponentsMap;
 
 		//IP-адрес сервера
-		static string ServerIP = "192.168.0.102";
+		static string ServerIP = "172.20.10.2";
 
 		//Контроль расстановки кораблей
 		private int mSingle = 4, mDouble = 3, mThree = 2, mFour = 1;
@@ -640,6 +637,9 @@ namespace SeaBattle
 		/// <returns></returns>
 		public void CheckPing(string ip)
 		{
+			Ping ping = new Ping();
+			PingReply pReply;
+
 			int i = 0;
 			while (i < 3)
 			{
@@ -652,9 +652,14 @@ namespace SeaBattle
 				i++;
 			}
 
-			MessageBox.Show("Сервер не доступен");
+			MessageBox.Show("Нет сети");
+			Dispatcher.Invoke(() =>
+			{
+				this.Close();
+			});
 			socket.Shutdown(SocketShutdown.Both);
 			socket.Disconnect(true);
+			
 		}
 
 		/// <summary>
@@ -686,7 +691,7 @@ namespace SeaBattle
 
 				Task.Run(() =>
 				{
-					CheckPing(ServerIP);
+					CheckPing(mPlayer.IPAdress);
 					return;
 				});
 
